@@ -26,14 +26,24 @@ contract EvenOdd is Ownable, ReentrancyGuard {
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
-    event Betted(address _userAddress, uint256 _amount);
+    event Betted(address _userAddress, uint256 _gameId, uint256 _amount);
     event EndedGame(uint256 _gameId, bool _result);
+    event Received(uint256 _amount);
 
     constructor(address cashAddress, address ticketAddress) payable {
         _cashManager = ICash(cashAddress);
         _ticketManager = ITicket(ticketAddress);
 
         _cashManager.buy{value: msg.value}();
+    }
+
+    receive() external payable {
+        emit Received(msg.value);
+    }
+
+    fallback() external payable {
+        require(msg.data.length == 0);
+        
     }
 
     function bet(bool isOdd, uint256 amount) external nonReentrant {
@@ -50,6 +60,8 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         });
 
         playerList[latestedMatchId].push(newPlayer);
+
+        emit Betted(msg.sender, latestedMatchId, amount);
     }
 
     function play() external onlyOwner {
@@ -128,7 +140,6 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         }
 
         emit EndedGame(latestedMatchId, isOdd);
-
     }
 
     function _nextGame() private onlyOwner {
