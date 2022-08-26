@@ -26,6 +26,9 @@ contract Ticket is ERC721, ITicket {
         _;
     }
 
+    /**
+     * Buy a ticket to play game. 0.1 eth -> 1 ticket
+     */
     function buy() external payable costs(10**17) {
         require(ticketOf[msg.sender].ticketId == 0, 'This user has already bought ticket!');
         // require(msg.value >= 10**17, 'User must pay 0.1 eth to buy a ticket!');
@@ -38,6 +41,10 @@ contract Ticket is ERC721, ITicket {
         emit Bought(msg.sender);
     }
 
+    /**
+     * Subtract times of ticket of user
+     * @param userAddress - Address of user whom we subtract times ticket of
+     */
     function subtractTimes(address userAddress) external {
         UserTicket memory userTicket = ticketOf[userAddress];
 
@@ -48,6 +55,9 @@ contract Ticket is ERC721, ITicket {
         emit SubTractedTimes(userAddress);
     }
 
+    /**
+     * Extend ticket when it was expired
+     */
     function extendTicket() external payable costs(10**17) {
         // require(msg.value >= 10**17, 'User must pay 0.1 eth to buy ticket!');
         UserTicket memory userTicket = ticketOf[msg.sender];
@@ -60,6 +70,11 @@ contract Ticket is ERC721, ITicket {
         emit ExtendedTicket(msg.sender);
     }
 
+    /**
+     * Check if a ticket is expired!
+     * @param userAddress - The address of user's ticket
+     * @return isExpired -  the ticket is expired or not 
+     */
     function isExpired(address userAddress) external view returns (bool) {
         UserTicket memory userTicket = ticketOf[userAddress];
 
@@ -68,10 +83,20 @@ contract Ticket is ERC721, ITicket {
         return userTicket.times == 0;
     }
 
+    /**
+     * Get ticket Id of a ticket
+     * @param userAddress - Address of user's ticketOf
+     * @return ticketId The id of the ticket
+     */
     function getTicketId(address userAddress) external view returns (uint256) {
         return ticketOf[userAddress].ticketId;
     }
 
+    /**
+     * Get times of a ticket
+     * @param userAddress - Address of user's ticket
+     * @return ticketTimes - The time that this ticket can be used to bet
+     */
     function getTicketTimes(address userAddress) external view returns (uint256) {
         UserTicket memory userTicket = ticketOf[userAddress];
 

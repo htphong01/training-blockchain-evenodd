@@ -13,12 +13,19 @@ contract Cash is ERC20, ICash, ReentrancyGuard {
 
     constructor() ERC20('Cash', 'C') {}
 
+    /**
+     * Buy some cashes to play game. 1 eth can buy 10 cashes
+     */
     function buy() external payable {
         _mint(msg.sender, msg.value / 10**17); // 1 eth -> 10 cash
 
         emit Bought(msg.value / 10**17);
     }
 
+    /**
+     * Withdraw amount of cash that user wants
+     * @param amount - Number of cash that user wants to withdraw
+     */
     function withdraw(uint256 amount) external payable nonReentrant {
         require(balanceOf(msg.sender) >= amount, 'Current balance is not enough');
 
@@ -28,4 +35,5 @@ contract Cash is ERC20, ICash, ReentrancyGuard {
        _burn(msg.sender, amount);
         emit Withdrawn(amount);
     }
+    
 }

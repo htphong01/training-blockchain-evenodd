@@ -46,6 +46,11 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         
     }
 
+    /**
+     * This function is used to bet in a game
+     * @param isOdd - (true/false) the result that user betted
+     * @param amount - The amount of token that user betteds
+     */
     function bet(bool isOdd, uint256 amount) external nonReentrant {
         _checkTicket();
         _checkAlreadyBet();
@@ -64,12 +69,19 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         emit Betted(msg.sender, latestedMatchId, amount);
     }
 
+    /**
+     * Play a new game
+     * Only owner can play
+     */
     function play() external onlyOwner {
         _roll();
         _endGame();
         _nextGame();
     }
 
+    /** 
+     * Checking a ticket is available
+     */
     function _checkTicket() private view {
         uint256 ticketId = _ticketManager.getTicketId(_msgSender());
         require(
@@ -84,6 +96,9 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         );
     }
 
+    /**
+     * Checking that user has already betted before
+     */
     function _checkAlreadyBet() private view {
         uint256 ticketId = _ticketManager.getTicketId(_msgSender());
         Player[] memory players = playerList[latestedMatchId];
@@ -96,6 +111,10 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+     * Checking that balance is enough to bet or the balance of contract is enought to reward
+     * @param amount - The amount of token that user betted
+     */
     function _checkCashBalance(uint256 amount) private view {
         require(
             _cashManager.balanceOf(_msgSender()) >= amount,
@@ -115,6 +134,9 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         );
     }
 
+    /**
+     * Rolling 2 result of the game
+     */
     function _roll() private onlyOwner {
         uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) -
             block.number /
@@ -128,6 +150,9 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         matchList[latestedMatchId].roll2 = uint256(roll2 % 6) + 1;
     }
 
+    /**
+     * Calculate the result of game and reward token to users
+     */
     function _endGame() private onlyOwner {
         Player[] memory players = playerList[latestedMatchId];
         Match memory currentMatch = matchList[latestedMatchId];
