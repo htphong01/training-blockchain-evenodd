@@ -4,7 +4,19 @@ require('@nomicfoundation/hardhat-network-helpers');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    solidity: '0.8.9',
+    networks: {
+        hardhat: {
+        },
+    },
+    solidity: {
+        version: "0.8.9",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200
+            }
+        }
+    },
     paths: {
         root: './src',
         sources: './contracts',
@@ -12,4 +24,7 @@ module.exports = {
         cache: './cache',
         artifacts: './artifacts',
     },
+    mocha: {
+        timeout: 40000
+    }
 };
