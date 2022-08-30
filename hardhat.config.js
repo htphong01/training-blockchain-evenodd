@@ -1,11 +1,15 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("@nomicfoundation/hardhat-chai-matchers");
-require("@nomicfoundation/hardhat-network-helpers");
+require('@nomicfoundation/hardhat-toolbox');
+require('@nomicfoundation/hardhat-chai-matchers');
+require('@nomicfoundation/hardhat-network-helpers');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-    solidity: "0.8.9",
+    solidity: '0.8.9',
     paths: {
-        root: "./src",
+        root: './src',
+        sources: './contracts',
+        tests: './test',
+        cache: './cache',
+        artifacts: './artifacts',
     },
 };

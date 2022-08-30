@@ -116,20 +116,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "buy",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "extendTicket",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -143,44 +129,6 @@
           "internalType": "address",
           "name": "operator",
           "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "userAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getTicketId",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "userAddress",
-          "type": "address"
-        }
-      ],
-      "name": "getTicketTimes",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -214,19 +162,18 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "userAddress",
+          "name": "_to",
           "type": "address"
-        }
-      ],
-      "name": "isExpired",
-      "outputs": [
+        },
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
         }
       ],
-      "stateMutability": "view",
+      "name": "mint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -321,11 +268,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "userAddress",
+          "name": "_newOwner",
           "type": "address"
         }
       ],
-      "name": "subtractTimes",
+      "name": "setOwner",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

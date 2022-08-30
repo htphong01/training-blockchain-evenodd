@@ -3,11 +3,15 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/ICash.sol";
-import "./interfaces/ITicket.sol";
-import "hardhat/console.sol";
+import "./interfaces/ICashManager.sol";
+import "./interfaces/ITicketManager.sol";
 
 contract EvenOdd is Ownable, ReentrancyGuard {
+
+    event Betted(address _userAddress, uint256 _gameId, uint256 _amount);
+    event Played(uint256 _gameId, bool _isOdd);
+    event Received(address from, uint256 _amount);
+
     struct Player {
         uint256 ticketId;
         bool isOdd;
@@ -17,56 +21,48 @@ contract EvenOdd is Ownable, ReentrancyGuard {
     struct Match {
         uint256 roll1;
         uint256 roll2;
+        bool isOdd;
     }
 
-    ICash private _cashManager;
-    ITicket private _ticketManager;
+    ICashManager private _cashManager;
+    ITicketManager private _ticketManager;
 
     uint256 public latestedMatchId;
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
-    event Betted(address _userAddress, uint256 _gameId, uint256 _amount);
-    event EndedGame(uint256 _gameId, bool _result);
-    event Received(uint256 _amount);
+    constructor(address _cashAddress, address _ticketAddress) payable {
+        _cashManager = ICashManager(_cashAddress);
+        _ticketManager = ITicketManager(_ticketAddress);
 
-    constructor(address cashAddress, address ticketAddress) payable {
-        _cashManager = ICash(cashAddress);
-        _ticketManager = ITicket(ticketAddress);
-
-        _cashManager.buy{value: msg.value}();
+        _cashManager.buy{ value: msg.value }();
     }
 
     receive() external payable {
-        emit Received(msg.value);
-    }
-
-    fallback() external payable {
-        require(msg.data.length == 0);
-        
+        emit Received(msg.sender, msg.value);
     }
 
     /**
      * This function is used to bet in a game
-     * @param isOdd - (true/false) the result that user betted
-     * @param amount - The amount of token that user betteds
+     * @param _isOdd - (true/false) the result that user betted
+     * @param _amount - The amount of token that user betteds
      */
-    function bet(bool isOdd, uint256 amount) external nonReentrant {
+    function bet(bool _isOdd, uint256 _amount) external nonReentrant {
         _checkTicket();
         _checkAlreadyBet();
-        _checkCashBalance(amount);
+        _checkCashBalance(_amount);
 
-        _cashManager.transferFrom(msg.sender, address(this), amount);
+        _cashManager.transferFrom(msg.sender, address(this), _amount);
         _ticketManager.subtractTimes(_msgSender());
         Player memory newPlayer = Player({
             ticketId: _ticketManager.getTicketId(msg.sender),
-            isOdd: isOdd,
-            bet: amount
+            isOdd: _isOdd,
+            bet: _amount
         });
 
         playerList[latestedMatchId].push(newPlayer);
 
-        emit Betted(msg.sender, latestedMatchId, amount);
+        emit Betted(msg.sender, latestedMatchId, _amount);
     }
 
     /**
@@ -77,6 +73,8 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         _roll();
         _endGame();
         _nextGame();
+
+        emit Played(latestedMatchId - 1, matchList[latestedMatchId - 1].isOdd);
     }
 
     /** 
@@ -106,18 +104,18 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         for (uint256 i = 0; i < players.length; i++) {
             require(
                 players[i].ticketId != ticketId,
-                "This user has bet before!"
+                "This user has betted before!"
             );
         }
     }
 
     /**
      * Checking that balance is enough to bet or the balance of contract is enought to reward
-     * @param amount - The amount of token that user betted
+     * @param _amount - The amount of token that user betted
      */
-    function _checkCashBalance(uint256 amount) private view {
+    function _checkCashBalance(uint256 _amount) private view {
         require(
-            _cashManager.balanceOf(_msgSender()) >= amount,
+            _cashManager.balanceOf(_msgSender()) >= _amount,
             "User's balance is not enough to bet"
         );
 
@@ -127,9 +125,9 @@ contract EvenOdd is Ownable, ReentrancyGuard {
             totalCashBetted = totalCashBetted + players[i].bet;
         }
 
-        uint256 totalCashReward = (totalCashBetted + amount) * 2;
+        uint256 totalCashReward = (totalCashBetted + _amount) * 2;
         require(
-            totalCashReward <= (_cashManager.balanceOf(address(this)) + amount),
+            totalCashReward <= (_cashManager.balanceOf(address(this)) + _amount),
             "Contract is not enough cash to reward if user win"
         );
     }
@@ -137,7 +135,7 @@ contract EvenOdd is Ownable, ReentrancyGuard {
     /**
      * Rolling 2 result of the game
      */
-    function _roll() private onlyOwner {
+    function _roll() private {
         uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) -
             block.number /
             3;
@@ -153,21 +151,20 @@ contract EvenOdd is Ownable, ReentrancyGuard {
     /**
      * Calculate the result of game and reward token to users
      */
-    function _endGame() private onlyOwner {
+    function _endGame() private {
         Player[] memory players = playerList[latestedMatchId];
         Match memory currentMatch = matchList[latestedMatchId];
         bool isOdd = (currentMatch.roll1 + currentMatch.roll2) % 2 == 1;
+        matchList[latestedMatchId].isOdd = isOdd;
 
         for (uint i = 0; i < players.length; i++) {
             if(players[i].isOdd == isOdd) {
                 _cashManager.transfer(_ticketManager.ownerOf(players[i].ticketId), players[i].bet * 2);
             }
         }
-
-        emit EndedGame(latestedMatchId, isOdd);
     }
 
-    function _nextGame() private onlyOwner {
+    function _nextGame() private {
         ++latestedMatchId;
     }
 }

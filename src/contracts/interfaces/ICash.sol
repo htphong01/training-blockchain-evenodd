@@ -4,7 +4,9 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface ICash is IERC20 {
-    function buy() external payable;
+    function mint(address userAddress, uint256 amount) external;
 
-    function withdraw(uint256 amount) external payable;
+    function burn(address userAddress, uint256 amount) external;
+
+    function setOwner(address newOwner) external;
 }
