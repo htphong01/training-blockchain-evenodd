@@ -16,13 +16,15 @@ describe('3. Test EvenOdd Contract', () => {
         cashManager = await CashManager.deploy(cash.address);
         ticketManager = await TicketManager.deploy(ticket.address);
 
+        evenOdd = await EvenOdd.deploy(cashManager.address, ticketManager.address);
+        
         await cash.connect(owner).setOwner(cashManager.address);
         await ticket.connect(owner).setOwner(ticketManager.address);
 
-        evenOdd = await EvenOdd.deploy(cashManager.address, ticketManager.address, { value: ethers.utils.parseEther("5") });
+        await evenOdd.supplyToken({ value: ethers.utils.parseEther('5') });
 
-        await cash.connect(user1).approve(evenOdd.address, ethers.utils.parseEther('5'));
-        await cash.connect(user2).approve(evenOdd.address, ethers.utils.parseEther('5'));
+        await cash.connect(user1).approve(cashManager.address, ethers.constants.MaxUint256);
+        await cash.connect(user2).approve(cashManager.address, ethers.constants.MaxUint256);
     });
 
     describe('3.1 Testing contract after deploy', () => {
@@ -66,8 +68,6 @@ describe('3. Test EvenOdd Contract', () => {
                     value: ethers.utils.parseEther('0.5'),
                 });
 
-                await cash.connect(user1).approve(evenOdd.address, ethers.utils.parseEther("5"));
-                console.log('user1', user1.address);
                 await evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.3'));
 
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'))).to.be.revertedWith(
@@ -138,12 +138,11 @@ describe('3. Test EvenOdd Contract', () => {
                     value: ethers.utils.parseEther('2'),
                 });
                 await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseEther('1')),
-                    'Balance of contract must be added 10**18 tokens and user subtract 10**18 tokens after user bet'
+                    evenOdd.connect(user1).bet(true, ethers.utils.parseEther('1'))
                 ).to.changeTokenBalances(
                     cash,
                     [evenOdd.address, user1.address],
-                    [ethers.utils.parseEther('10'), ethers.utils.parseEther('-10')]
+                    [ethers.utils.parseEther('1'), ethers.utils.parseEther('-1')]
                 );
 
                 const userTicket = await ticketManager.ticketOf(user1.address);
@@ -156,7 +155,7 @@ describe('3. Test EvenOdd Contract', () => {
                 expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(
                     true
                 );
-                expect(player.bet, 'Token in match history must be the same as token the user has betted').to.equal(10);
+                expect(player.bet, 'Token in match history must be the same as token the user has betted').to.equal(ethers.utils.parseEther('1'));
             });
         });
     });
@@ -177,7 +176,7 @@ describe('3. Test EvenOdd Contract', () => {
                 value: ethers.utils.parseEther('0.5'),
             });
 
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.5'));
+            await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
             await evenOdd.play();
 
             const afterMatchId = await evenOdd.latestedMatchId();
@@ -191,7 +190,7 @@ describe('3. Test EvenOdd Contract', () => {
             await cashManager.connect(user1).buy({
                 value: ethers.utils.parseEther('0.5'),
             });
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.5'));
+            await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
 
             await ticketManager.connect(user2).buy({
                 value: 10,
@@ -199,20 +198,20 @@ describe('3. Test EvenOdd Contract', () => {
             await cashManager.connect(user2).buy({
                 value: ethers.utils.parseEther('0.5'),
             });
-            await evenOdd.connect(user2).bet(false, ethers.utils.parseEther('0.5'));
+            await evenOdd.connect(user2).bet(false, ethers.utils.parseEther('0.2'));
 
             const latestedMatchId = await evenOdd.latestedMatchId();
             await evenOdd.play();
 
             const currentMatch = await evenOdd.matchList(latestedMatchId);
             const isOdd = currentMatch.isOdd;
-            let balanceOfUser1 = ethers.BigNumber.from(30);
-            let balanceOfUser2 = ethers.BigNumber.from(30);
+            let balanceOfUser1 = ethers.BigNumber.from(ethers.utils.parseEther('0.3'));
+            let balanceOfUser2 = ethers.BigNumber.from(ethers.utils.parseEther('0.3'));
 
             if (isOdd) {
-                balanceOfUser1 = balanceOfUser1.add(40);
+                balanceOfUser1 = balanceOfUser1.add(ethers.utils.parseEther('0.4'));
             } else {
-                balanceOfUser2 = balanceOfUser2.add(40);
+                balanceOfUser2 = balanceOfUser2.add(ethers.utils.parseEther('0.4'));
             }
 
             expect(await cashManager.balanceOf(user1.address)).to.equal(balanceOfUser1);

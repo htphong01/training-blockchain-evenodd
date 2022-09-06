@@ -31,15 +31,20 @@ contract EvenOdd is Ownable, ReentrancyGuard {
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
-    constructor(address _cashAddress, address _ticketAddress) payable {
+    constructor(address _cashAddress, address _ticketAddress) {
         _cashManager = ICashManager(_cashAddress);
         _ticketManager = ITicketManager(_ticketAddress);
-
-        _cashManager.buy{ value: msg.value }();
     }
 
     receive() external payable {
         emit Received(msg.sender, msg.value);
+    }
+
+    /**
+     * This function is used to supply token to contract
+     */
+    function supplyToken() external payable onlyOwner {
+        _cashManager.buy{ value: msg.value }();
     }
 
     /**

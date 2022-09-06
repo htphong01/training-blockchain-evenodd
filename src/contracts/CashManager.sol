@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
-import "hardhat/console.sol";
 
 contract CashManager is ICashManager, ReentrancyGuard {
     event Bought(address userAddress, uint256 _amount);
@@ -40,7 +39,6 @@ contract CashManager is ICashManager, ReentrancyGuard {
     }
 
     function transferFrom(address _from, address _to, uint256 _amount) external returns(bool) {
-        console.log('from', _from);
         bool success = _cash.transferFrom(_from, _to, _amount);
         return success;
     }

@@ -9,7 +9,8 @@
     "scripts": {
         "test": "npx hardhat test",
         "compile": "npx hardhat compile",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "deploy-local": "npx hardhat run src/scripts/deploy.js --network localhost"
     },
     "author": "",
     "license": "ISC",
