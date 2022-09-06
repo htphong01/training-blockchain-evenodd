@@ -48,39 +48,39 @@ describe('1. Testing Cash contract', () => {
         });
     });
 
-    // describe('1.2 Testing `withdraw` function', () => {
-    //     it('1.2.1 [Fail]: Balance of user is not enough', async () => {
-    //         await cash.connect(owner).setOwner(cashManager.address);
-    //         await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('2'))).to.be.revertedWith(
-    //             'ERC20: burn amount exceeds balance'
-    //         );
-    //     });
+    describe('1.2 Testing `withdraw` function', () => {
+        it('1.2.1 [Fail]: Balance of user is not enough', async () => {
+            await cash.connect(owner).setOwner(cashManager.address);
+            await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('2'))).to.be.revertedWith(
+                'ERC20: burn amount exceeds balance'
+            );
+        });
 
-    //     it('1.2.2 [Fail]: Balance of user is not enough', async () => {
-    //         await cash.connect(owner).setOwner(cashManager.address);
-    //         await cashManager.connect(user).buy({
-    //             value: ethers.utils.parseEther('1'),
-    //         });
-    //         await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('2'))).to.be.revertedWith(
-    //             'ERC20: burn amount exceeds balance'
-    //         );
-    //     });
+        it('1.2.2 [Fail]: Balance of user is not enough', async () => {
+            await cash.connect(owner).setOwner(cashManager.address);
+            await cashManager.connect(user).buy({
+                value: ethers.utils.parseEther('1'),
+            });
+            await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('2'))).to.be.revertedWith(
+                'ERC20: burn amount exceeds balance'
+            );
+        });
 
-    //     it('1.2.3 [OK]: User withdraw successfully', async () => {
-    //         await cash.connect(owner).setOwner(cashManager.address);
-    //         await cashManager.connect(user).buy({
-    //             value: ethers.utils.parseEther('1'),
-    //         });
+        it('1.2.3 [OK]: User withdraw successfully', async () => {
+            await cash.connect(owner).setOwner(cashManager.address);
+            await cashManager.connect(user).buy({
+                value: ethers.utils.parseEther('1'),
+            });
 
-    //         await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('0.5'))).to.changeTokenBalance(
-    //             cashManager,
-    //             user.address,
-    //             ethers.utils.parseEther('-0.5')
-    //         );
-    //         await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('0.5'))).to.changeEtherBalances(
-    //             [cashManager.address, user.address],
-    //             [ethers.utils.parseEther('-0.5'), ethers.utils.parseEther('0.5')]
-    //         );
-    //     });
-    // });
+            await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('0.5'))).to.changeTokenBalance(
+                cashManager,
+                user.address,
+                ethers.utils.parseEther('-0.5')
+            );
+            await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('0.5'))).to.changeEtherBalances(
+                [cashManager.address, user.address],
+                [ethers.utils.parseEther('-0.5'), ethers.utils.parseEther('0.5')]
+            );
+        });
+    });
 });

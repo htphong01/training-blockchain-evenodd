@@ -4,12 +4,13 @@ pragma solidity 0.8.9;
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
+import "hardhat/console.sol";
 
 contract CashManager is ICashManager, ReentrancyGuard {
     event Bought(address userAddress, uint256 _amount);
     event Withdrawn(address userAddress, uint256 _amount);
 
-    uint256 public rateExchange = 1; // 1 wei -> 1 cash
+    uint256 public rateConversion = 1; // 1 wei -> 1 cash
 
     ICash private _cash;
 
@@ -21,7 +22,7 @@ contract CashManager is ICashManager, ReentrancyGuard {
      * Buy some cashes to play game. 1 wei = 1 cash
      */
     function buy() external payable {
-        uint256 amount = msg.value / rateExchange;
+        uint256 amount = msg.value / rateConversion;
         _cash.mint(msg.sender, amount);
         emit Bought(msg.sender, amount);
     }
@@ -32,13 +33,14 @@ contract CashManager is ICashManager, ReentrancyGuard {
      */
     function withdraw(uint256 _amount) external nonReentrant {
         _cash.burn(msg.sender, _amount);
-        (bool success, ) = payable(msg.sender).call{value: _amount * rateExchange}('');
+        (bool success, ) = payable(msg.sender).call{value: _amount * rateConversion}('');
         require(success, 'Withdraw not successful!');
 
         emit Withdrawn(msg.sender, _amount);
     }
 
     function transferFrom(address _from, address _to, uint256 _amount) external returns(bool) {
+        console.log('from', _from);
         bool success = _cash.transferFrom(_from, _to, _amount);
         return success;
     }
@@ -52,11 +54,7 @@ contract CashManager is ICashManager, ReentrancyGuard {
         return success;
     }
 
-    function setRateExchange(uint256 _rate) external {
-        rateExchange = _rate;
-    }
-
-    function approve(address _spender, uint256 _amount) external returns(bool) {
-        return _cash.approve(_spender, _amount);
+    function setRateConversion(uint256 _rate) external {
+        rateConversion = _rate;
     }
 }

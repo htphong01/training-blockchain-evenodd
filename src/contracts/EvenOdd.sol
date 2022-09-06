@@ -51,7 +51,6 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         _checkTicket();
         _checkAlreadyBet();
         _checkCashBalance(_amount);
-
         _cashManager.transferFrom(msg.sender, address(this), _amount);
         _ticketManager.subtractTimes(_msgSender());
         Player memory newPlayer = Player({

@@ -67,7 +67,7 @@ describe('3. Test EvenOdd Contract', () => {
                 });
 
                 await cash.connect(user1).approve(evenOdd.address, ethers.utils.parseEther("5"));
-
+                console.log('user1', user1.address);
                 await evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.3'));
 
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'))).to.be.revertedWith(

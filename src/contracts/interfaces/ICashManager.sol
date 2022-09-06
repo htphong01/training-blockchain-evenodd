@@ -12,7 +12,5 @@ interface ICashManager {
 
     function transfer(address to, uint256 amount) external returns(bool);
 
-    function setRateExchange(uint256 rate) external;
-
-    function approve(address spender, uint256 amount) external returns(bool);
+    function setRateConversion(uint256 rate) external;
 }
