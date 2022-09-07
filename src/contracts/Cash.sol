@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import './interfaces/ICash.sol';
 
 contract Cash is ERC20, Ownable, ICash {
-
     constructor() ERC20('Cash', 'C') {}
 
     function mint(address _account, uint256 _amount) onlyOwner external {

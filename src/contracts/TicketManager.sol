@@ -3,8 +3,9 @@ pragma solidity 0.8.9;
 
 import './interfaces/ITicket.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
+import './interfaces/ITicketManager.sol';
 
-contract TicketManager is Ownable {
+contract TicketManager is ITicketManager, Ownable {
 
     event Bought(address _account, uint256 ticketId);
     event SubTractedTimes(address _account, uint256 remainTimes);

@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
-describe('3. Test EvenOdd Contract', () => {
+describe('Test EvenOdd Contract', () => {
     beforeEach(async () => {
         Cash = await ethers.getContractFactory('Cash');
         CashManager = await ethers.getContractFactory('CashManager');
@@ -16,34 +16,34 @@ describe('3. Test EvenOdd Contract', () => {
         cashManager = await CashManager.deploy(cash.address);
         ticketManager = await TicketManager.deploy(ticket.address);
 
-        evenOdd = await EvenOdd.deploy(cashManager.address, ticketManager.address);
+        evenOdd = await EvenOdd.deploy(cash.address, cashManager.address, ticketManager.address);
         
         await cash.connect(owner).setOwner(cashManager.address);
         await ticket.connect(owner).setOwner(ticketManager.address);
 
         await evenOdd.supplyToken({ value: ethers.utils.parseEther('5') });
 
-        await cash.connect(user1).approve(cashManager.address, ethers.constants.MaxUint256);
-        await cash.connect(user2).approve(cashManager.address, ethers.constants.MaxUint256);
+        await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
+        await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
     });
 
-    describe('3.1 Testing contract after deploy', () => {
-        it('3.1.1 [OK]: Check owner', async function () {
+    describe('Testing contract after deploy', () => {
+        it('[OK]: Check owner', async function () {
             expect(owner.address).to.equal(await evenOdd.owner());
             expect(cashManager.address).to.equal(await cash.owner());
             expect(ticketManager.address).to.equal(await ticket.owner());
         });
     });
 
-    describe('3.2 Testing `bet` function', () => {
-        describe('3.2.1 Checking ticket of user', () => {
-            it('3.2.1.1 [Fail]: Can not bet because user have not bought ticket', async () => {
+    describe('Testing `bet` function', () => {
+        describe('Checking ticket of user', () => {
+            it('[Fail]: Can not bet because user have not bought ticket', async () => {
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.1'))).to.be.revertedWith(
                     'This user does not have ticket. Please buy a one to play'
                 );
             });
 
-            it('3.2.1.2 [Fail]: Can not bet because ticket of user is expired', async () => {
+            it('[Fail]: Can not bet because ticket of user is expired', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -58,8 +58,8 @@ describe('3. Test EvenOdd Contract', () => {
             });
         });
 
-        describe('3.2.2 Checking that user has already bet', () => {
-            it('3.2.2.1 [Fail]: Can not bet because this user has betted before', async () => {
+        describe('Checking that user has already bet', () => {
+            it('[Fail]: Can not bet because this user has betted before', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -76,8 +76,8 @@ describe('3. Test EvenOdd Contract', () => {
             });
         });
 
-        describe('3.2.3 Checking the cash balance is enough to bet', () => {
-            it('3.2.3.1 [Fail]: Can not bet because the balance of user is not enough', async () => {
+        describe('Checking the cash balance is enough to bet', () => {
+            it('[Fail]: Can not bet because the balance of user is not enough', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -91,7 +91,7 @@ describe('3. Test EvenOdd Contract', () => {
                 );
             });
 
-            it('3.2.3.2 [Fail]: Can not bet because the balance of contract is not enough', async () => {
+            it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -105,7 +105,7 @@ describe('3. Test EvenOdd Contract', () => {
                 );
             });
 
-            it('3.2.3.3 [Fail]: Can not bet because the balance of contract is not enough', async () => {
+            it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -129,8 +129,8 @@ describe('3. Test EvenOdd Contract', () => {
             });
         });
 
-        describe('3.2.4 Betting successfully', () => {
-            it('3.2.4.1 [OK]: User betting successfully', async () => {
+        describe(' Betting successfully', () => {
+            it('[OK]: User betting successfully', async () => {
                 await ticketManager.connect(user1).buy({
                     value: 10,
                 });
@@ -146,7 +146,7 @@ describe('3. Test EvenOdd Contract', () => {
                 );
 
                 const userTicket = await ticketManager.ticketOf(user1.address);
-                const latestedMatchId = await evenOdd.latestedMatchId();
+                const latestedMatchId = await evenOdd.latestMatchId();
                 const player = await evenOdd.playerList(latestedMatchId, 0);
 
                 expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(
@@ -160,14 +160,14 @@ describe('3. Test EvenOdd Contract', () => {
         });
     });
 
-    describe('3.3 Testing `play` function', () => {
-        it('3.3.1 [Fail]: Only owner can play', async () => {
+    describe('Testing `play` function', () => {
+        it('[Fail]: Only owner can play', async () => {
             expect(await evenOdd.play());
             await expect(evenOdd.connect(user1).play()).to.be.revertedWith('Ownable: caller is not the owner');
         });
 
-        it('3.3.2 [OK]: Match id is increased after play a game', async () => {
-            const beforeMatchId = await evenOdd.latestedMatchId();
+        it('[OK]: Match id is increased after play a game', async () => {
+            const beforeMatchId = await evenOdd.latestMatchId();
 
             await ticketManager.connect(user1).buy({
                 value: 10,
@@ -179,11 +179,11 @@ describe('3. Test EvenOdd Contract', () => {
             await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
             await evenOdd.play();
 
-            const afterMatchId = await evenOdd.latestedMatchId();
+            const afterMatchId = await evenOdd.latestMatchId();
             expect(afterMatchId - beforeMatchId, 'Match id must be increased after play').to.be.equal(1);
         });
 
-        it('3.3.3 [OK]: Blance of user is increased/descreased after play', async () => {
+        it('[OK]: Blance of user is increased/descreased after play', async () => {
             await ticketManager.connect(user1).buy({
                 value: 10,
             });
@@ -200,7 +200,7 @@ describe('3. Test EvenOdd Contract', () => {
             });
             await evenOdd.connect(user2).bet(false, ethers.utils.parseEther('0.2'));
 
-            const latestedMatchId = await evenOdd.latestedMatchId();
+            const latestedMatchId = await evenOdd.latestMatchId();
             await evenOdd.play();
 
             const currentMatch = await evenOdd.matchList(latestedMatchId);
@@ -214,8 +214,8 @@ describe('3. Test EvenOdd Contract', () => {
                 balanceOfUser2 = balanceOfUser2.add(ethers.utils.parseEther('0.4'));
             }
 
-            expect(await cashManager.balanceOf(user1.address)).to.equal(balanceOfUser1);
-            expect(await cashManager.balanceOf(user2.address)).to.equal(balanceOfUser2);
+            expect(await cash.balanceOf(user1.address)).to.equal(balanceOfUser1);
+            expect(await cash.balanceOf(user2.address)).to.equal(balanceOfUser2);
         });
     });
 });

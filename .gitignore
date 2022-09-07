@@ -3,3 +3,4 @@ yarn.lock
 .prettierrc
 src/artifacts
 src/cache
+.env

@@ -1,10 +1,6 @@
 async function main() {
     const [deployer, user1, user2, user3] = await ethers.getSigners();
 
-    console.log("Deploying contracts with the account:", deployer.address);
-
-    console.log("Account balance:", (await deployer.getBalance()).toString());
-
     const Cash = await ethers.getContractFactory('Cash');
     const CashManager = await ethers.getContractFactory('CashManager');
     const Ticket = await ethers.getContractFactory('Ticket');

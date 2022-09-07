@@ -10,12 +10,14 @@
         "test": "npx hardhat test",
         "compile": "npx hardhat compile",
         "format": "prettier --write .",
-        "deploy-local": "npx hardhat run src/scripts/deploy.js --network localhost"
+        "deploy-local": "npx hardhat run src/scripts/deploy.js --network localhost",
+        "deploy-ropsten": "npx hardhat run src/scripts/deploy.js --network ropsten"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@openzeppelin/contracts": "^4.7.3"
+        "@openzeppelin/contracts": "^4.7.3",
+        "dotenv": "^16.0.2"
     },
     "devDependencies": {
         "@nomicfoundation/hardhat-chai-matchers": "^1.0.3",

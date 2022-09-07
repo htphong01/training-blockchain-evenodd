@@ -3,6 +3,7 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ICashManager.sol";
 import "./interfaces/ITicketManager.sol";
 
@@ -23,17 +24,18 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         uint256 roll2;
         bool isOdd;
     }
-
+    IERC20 private _cash;
     ICashManager private _cashManager;
     ITicketManager private _ticketManager;
 
-    uint256 public latestedMatchId;
+    uint256 public latestMatchId;
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
-    constructor(address _cashAddress, address _ticketAddress) {
-        _cashManager = ICashManager(_cashAddress);
-        _ticketManager = ITicketManager(_ticketAddress);
+    constructor(address _cashAddress, address _cashManagerAddress, address _ticketManagerAddress) {
+        _cash = IERC20(_cashAddress);
+        _cashManager = ICashManager(_cashManagerAddress);
+        _ticketManager = ITicketManager(_ticketManagerAddress);
     }
 
     receive() external payable {
@@ -56,7 +58,7 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         _checkTicket();
         _checkAlreadyBet();
         _checkCashBalance(_amount);
-        _cashManager.transferFrom(msg.sender, address(this), _amount);
+        _cash.transferFrom(msg.sender, address(this), _amount);
         _ticketManager.subtractTimes(_msgSender());
         Player memory newPlayer = Player({
             ticketId: _ticketManager.getTicketId(msg.sender),
@@ -64,9 +66,9 @@ contract EvenOdd is Ownable, ReentrancyGuard {
             bet: _amount
         });
 
-        playerList[latestedMatchId].push(newPlayer);
+        playerList[latestMatchId].push(newPlayer);
 
-        emit Betted(msg.sender, latestedMatchId, _amount);
+        emit Betted(msg.sender, latestMatchId, _amount);
     }
 
     /**
@@ -78,7 +80,7 @@ contract EvenOdd is Ownable, ReentrancyGuard {
         _endGame();
         _nextGame();
 
-        emit Played(latestedMatchId - 1, matchList[latestedMatchId - 1].isOdd);
+        emit Played(latestMatchId - 1, matchList[latestMatchId - 1].isOdd);
     }
 
     /** 
@@ -103,7 +105,7 @@ contract EvenOdd is Ownable, ReentrancyGuard {
      */
     function _checkAlreadyBet() private view {
         uint256 ticketId = _ticketManager.getTicketId(_msgSender());
-        Player[] memory players = playerList[latestedMatchId];
+        Player[] memory players = playerList[latestMatchId];
 
         for (uint256 i = 0; i < players.length; i++) {
             require(
@@ -119,11 +121,11 @@ contract EvenOdd is Ownable, ReentrancyGuard {
      */
     function _checkCashBalance(uint256 _amount) private view {
         require(
-            _cashManager.balanceOf(_msgSender()) >= _amount,
+            _cash.balanceOf(_msgSender()) >= _amount,
             "User's balance is not enough to bet"
         );
 
-        Player[] memory players = playerList[latestedMatchId];
+        Player[] memory players = playerList[latestMatchId];
         uint256 totalCashBetted = 0;
         for (uint256 i = 0; i < players.length; i++) {
             totalCashBetted = totalCashBetted + players[i].bet;
@@ -131,7 +133,7 @@ contract EvenOdd is Ownable, ReentrancyGuard {
 
         uint256 totalCashReward = (totalCashBetted + _amount) * 2;
         require(
-            totalCashReward <= (_cashManager.balanceOf(address(this)) + _amount),
+            totalCashReward <= (_cash.balanceOf(address(this)) + _amount),
             "Contract is not enough cash to reward if user win"
         );
     }
@@ -148,27 +150,27 @@ contract EvenOdd is Ownable, ReentrancyGuard {
             2 +
             block.difficulty) / 4;
 
-        matchList[latestedMatchId].roll1 = uint256(roll1 % 6) + 1;
-        matchList[latestedMatchId].roll2 = uint256(roll2 % 6) + 1;
+        matchList[latestMatchId].roll1 = uint256(roll1 % 6) + 1;
+        matchList[latestMatchId].roll2 = uint256(roll2 % 6) + 1;
     }
 
     /**
      * Calculate the result of game and reward token to users
      */
     function _endGame() private {
-        Player[] memory players = playerList[latestedMatchId];
-        Match memory currentMatch = matchList[latestedMatchId];
+        Player[] memory players = playerList[latestMatchId];
+        Match memory currentMatch = matchList[latestMatchId];
         bool isOdd = (currentMatch.roll1 + currentMatch.roll2) % 2 == 1;
-        matchList[latestedMatchId].isOdd = isOdd;
+        matchList[latestMatchId].isOdd = isOdd;
 
         for (uint i = 0; i < players.length; i++) {
             if(players[i].isOdd == isOdd) {
-                _cashManager.transfer(_ticketManager.ownerOf(players[i].ticketId), players[i].bet * 2);
+                _cash.transfer(_ticketManager.ownerOf(players[i].ticketId), players[i].bet * 2);
             }
         }
     }
 
     function _nextGame() private {
-        ++latestedMatchId;
+        ++latestMatchId;
     }
 }

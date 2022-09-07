@@ -6,11 +6,5 @@ interface ICashManager {
 
     function withdraw(uint256 amount) external;
 
-    function transferFrom(address from, address to, uint256 amount) external returns(bool);
-
-    function balanceOf(address account) external view returns(uint256);
-
-    function transfer(address to, uint256 amount) external returns(bool);
-
     function setRateConversion(uint256 rate) external;
 }
