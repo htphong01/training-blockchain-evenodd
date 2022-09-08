@@ -15,7 +15,12 @@ async function main() {
     await cash.connect(deployer).setOwner(cashManager.address);
     await ticket.connect(deployer).setOwner(ticketManager.address);
 
-    const evenOdd = await EvenOdd.deploy(cashManager.address, ticketManager.address);
+    const evenOdd = await EvenOdd.deploy(cash.address, cashManager.address, ticketManager.address);
+    console.log('cash', cash.address);
+    console.log('ticket', ticket.address);
+    console.log('cashManager', cashManager.address);
+    console.log('ticketManager', ticketManager.address);
+    console.log('evenodd', evenOdd.address);
 }
 
 main()

@@ -18,11 +18,11 @@ module.exports = {
         },
         ropsten: {
             url: process.env.ROPSTEN_URL,
-            account: [process.env.DEPLOY_ACCOUNT]
+            accounts: [process.env.DEPLOY_ACCOUNT]
         },
-        rinkeyby: {
-            url: process.env.RINKEYBY_URL,
-            account: [process.env.DEPLOY_ACCOUNT]
+        rinkeby: {
+            url: process.env.RINKEBY_URL,
+            accounts: [process.env.DEPLOY_ACCOUNT]
         }
     },
     etherscan: {
