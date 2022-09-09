@@ -12,6 +12,7 @@
         "format": "prettier --write .",
         "deploy-local": "npx hardhat run src/scripts/deploy.js --network localhost",
         "deploy-ropsten": "npx hardhat run src/scripts/deploy.js --network ropsten",
+        "verify-ropsten": "npx hardhat run src/scripts/verify.js --network ropsten",
         "deploy-rinkeby": "npx hardhat run src/scripts/deploy.js --network rinkeby"
     },
     "author": "",

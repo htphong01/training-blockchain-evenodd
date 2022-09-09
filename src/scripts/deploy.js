@@ -1,5 +1,5 @@
 async function main() {
-    const [deployer, user1, user2, user3] = await ethers.getSigners();
+    const [deployer] = await ethers.getSigners();
 
     const Cash = await ethers.getContractFactory('Cash');
     const CashManager = await ethers.getContractFactory('CashManager');

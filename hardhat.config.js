@@ -4,7 +4,7 @@ require('@nomicfoundation/hardhat-network-helpers');
 
 require('dotenv').config();
 /**
- * verify task
+ * verify smart contract
  */
 require("@nomiclabs/hardhat-etherscan");
 
