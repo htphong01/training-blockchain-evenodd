@@ -23,7 +23,12 @@ module.exports = {
         rinkeby: {
             url: process.env.RINKEBY_URL,
             accounts: [process.env.DEPLOY_ACCOUNT]
-        }
+        },
+        bsc: {
+            url: process.env.BSC_URL,
+            chainId: 97,
+            accounts: [process.env.DEPLOY_ACCOUNT]
+        },
     },
     etherscan: {
         apiKey: process.env.ETHERSCAN_API_KEY
