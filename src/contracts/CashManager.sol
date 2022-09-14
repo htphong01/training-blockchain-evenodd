@@ -1,31 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import '@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
 
-contract CashManager is ICashManager, ReentrancyGuard, Ownable {
-    event Bought(address userAddress, uint256 _amount);
-    event Withdrawn(address userAddress, uint256 _amount);
+contract CashManager is ICashManager, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+    event Bought(address indexed _account, uint256 _amount);
+    event Withdrawn(address indexed _account, uint256 _amount);
 
-    uint256 public rateConversion = 1; // 1 wei -> 1 cash
+    uint256 public rateConversion; // 1 wei -> 1 cash
 
-    ICash private _cash;
+    ICash public cash;
 
-    constructor(address _cashAddress) {
-        _cash = ICash(_cashAddress);
+    function initialize(ICash _cashAddress) initializer public {
+        cash = _cashAddress;
+        rateConversion = 1;
+        __Ownable_init();
+        __ReentrancyGuard_init();
     }
 
     /**
      * Buy some cashes to play game. 1 wei = 1 cash
      */
     function buy() external payable {
+        require(msg.value > 0, 'The amount of token that will be bought must be greater than 0');
         uint256 amount = msg.value / rateConversion;
-        _cash.mint(msg.sender, amount);
-        emit Bought(msg.sender, amount);
+        cash.mint(_msgSender(), amount);
+        emit Bought(_msgSender(), amount);
     }
 
     /**
@@ -33,14 +36,18 @@ contract CashManager is ICashManager, ReentrancyGuard, Ownable {
      * @param _amount - Number of cash that user wants to withdraw
      */
     function withdraw(uint256 _amount) external nonReentrant {
-        _cash.burn(msg.sender, _amount);
-        (bool success, ) = payable(msg.sender).call{value: _amount * rateConversion}('');
+        cash.burn(_msgSender(), _amount);
+        (bool success, ) = payable(_msgSender()).call{value: _amount * rateConversion}('');
         require(success, 'Withdraw not successful!');
 
-        emit Withdrawn(msg.sender, _amount);
+        emit Withdrawn(_msgSender(), _amount);
     }
 
+    /**
+     * @dev 
+     */
     function setRateConversion(uint256 _rate) external onlyOwner {
+        require(_rate > 0, 'Rate must be greater than zero');
         rateConversion = _rate;
     }
 }

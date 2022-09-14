@@ -1,15 +1,18 @@
 const { expect } = require('chai');
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
 
 describe('Testing Ticket contract', function () {
     beforeEach(async () => {
+        [owner, user1, user2] = await ethers.getSigners();
+
         const Ticket = await ethers.getContractFactory('Ticket');
         const TicketManager = await ethers.getContractFactory('TicketManager');
 
-        [owner, user1, user2] = await ethers.getSigners();
+        ticket = await upgrades.deployProxy(Ticket);
+        await ticket.deployed();
 
-        ticket = await Ticket.deploy();
-        ticketManager = await TicketManager.deploy(ticket.address);
+        ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
+        await ticketManager.deployed();
 
         await ticket.connect(owner).setOwner(ticketManager.address);
     });

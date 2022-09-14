@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-interface ICash is IERC20 {
+interface ICash is IERC20Upgradeable {
     function mint(address userAddress, uint256 amount) external;
 
     function burn(address userAddress, uint256 amount) external;

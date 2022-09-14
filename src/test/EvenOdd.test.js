@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
 
 describe('Test EvenOdd Contract', () => {
     beforeEach(async () => {
@@ -11,12 +11,20 @@ describe('Test EvenOdd Contract', () => {
 
         [owner, user1, user2] = await ethers.getSigners();
 
-        cash = await Cash.deploy();
-        ticket = await Ticket.deploy();
-        cashManager = await CashManager.deploy(cash.address);
-        ticketManager = await TicketManager.deploy(ticket.address);
+        cash = await upgrades.deployProxy(Cash);
+        await cash.deployed();
 
-        evenOdd = await EvenOdd.deploy(cash.address, cashManager.address, ticketManager.address);
+        ticket = await upgrades.deployProxy(Ticket);
+        await ticket.deployed();
+
+        cashManager = await upgrades.deployProxy(CashManager, [cash.address]);
+        await cashManager.deployed();
+
+        ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
+        await ticketManager.deployed();
+
+        evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
+        await evenOdd.deployed();
         
         await cash.connect(owner).setOwner(cashManager.address);
         await ticket.connect(owner).setOwner(ticketManager.address);

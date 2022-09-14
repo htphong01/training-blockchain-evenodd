@@ -2,11 +2,17 @@ require('@nomicfoundation/hardhat-toolbox');
 require('@nomicfoundation/hardhat-chai-matchers');
 require('@nomicfoundation/hardhat-network-helpers');
 
-require('dotenv').config();
+/**
+ * User for Upgradable contracts
+ * Ref: https://docs.openzeppelin.com/upgrades-plugins/1.x/
+ */
+
+require('@openzeppelin/hardhat-upgrades');
 /**
  * verify smart contract
  */
 require("@nomiclabs/hardhat-etherscan");
+require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

@@ -1,30 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import './interfaces/ITicket.sol';
-import "@openzeppelin/contracts/access/Ownable.sol";
 import './interfaces/ITicketManager.sol';
 
-contract TicketManager is ITicketManager, Ownable {
-
-    event Bought(address _account, uint256 ticketId);
-    event SubTractedTimes(address _account, uint256 remainTimes);
-    event ExtendedTicket(address _account, uint256 times);
-
-    uint256 public latestedTicket;
-    uint256 public ticketPrice = 10; // 10 wei -> 1 ticket
+contract TicketManager is OwnableUpgradeable, ITicketManager {
+    event Bought(address indexed _account, uint256 indexed _ticketId);
+    event SubTractedTimes(address indexed _account, uint256 _remainTimes);
+    event ExtendedTicket(address indexed _account, uint256 _times);
 
     struct UserTicket {
         uint256 ticketId;
         uint256 times;
     }
 
+    uint256 public latestedTicket;
+    uint256 public ticketPrice; // 10 wei -> 1 ticket
+
     mapping(address => UserTicket) public ticketOf;
+    ITicket public ticket;
 
-    ITicket private _ticket;
+    // constructor(address ticketAddress) {
+    //     ticket = ITicket(ticketAddress);
+    // }
 
-    constructor(address ticketAddress) {
-        _ticket = ITicket(ticketAddress);
+    function initialize(address _ticketAddress) initializer public {
+        // Validate _ticketAddress
+        ticket = ITicket(_ticketAddress);
+        ticketPrice = 10;
     }
 
     modifier costs(uint256 price) {
@@ -38,7 +42,7 @@ contract TicketManager is ITicketManager, Ownable {
     function buy() external payable costs(ticketPrice) {
         require(ticketOf[_msgSender()].ticketId == 0, 'This user has already bought ticket!');
 
-        _ticket.mint(_msgSender(), ++latestedTicket);
+        ticket.mint(_msgSender(), ++latestedTicket);
 
         ticketOf[_msgSender()].ticketId = latestedTicket;
         ticketOf[_msgSender()].times = 3;
@@ -51,6 +55,7 @@ contract TicketManager is ITicketManager, Ownable {
      * @param _account - Address of user whom we subtract times ticket of
      */
     function subtractTimes(address _account) external {
+        require(address(_account) != address(0), 'The address of account is not valid!');
         UserTicket memory userTicket = ticketOf[_account];
 
         require(userTicket.ticketId != 0, 'This user has not bought ticket!');
@@ -78,13 +83,14 @@ contract TicketManager is ITicketManager, Ownable {
     /**
      * Check if a ticket is expired!
      * @param _account - The address of user's ticket
-     * @return isExpired -  the ticket is expired or not 
+     * @return isExpired -  the ticket is expired or not
      */
     function isExpired(address _account) external view returns (bool) {
+        require(address(_account) != address(0), 'The address of account is not valid!');
         UserTicket memory userTicket = ticketOf[_account];
 
         require(userTicket.ticketId != 0, 'This user has not bought ticket!');
-        
+
         return userTicket.times == 0;
     }
 
@@ -94,6 +100,7 @@ contract TicketManager is ITicketManager, Ownable {
      * @return ticketId The id of the ticket
      */
     function getTicketId(address _account) external view returns (uint256) {
+        require(address(_account) != address(0), 'The address of account is not valid!');
         return ticketOf[_account].ticketId;
     }
 
@@ -103,6 +110,7 @@ contract TicketManager is ITicketManager, Ownable {
      * @return ticketTimes - The time that this ticket can be used to bet
      */
     function getTicketTimes(address _account) external view returns (uint256) {
+        require(address(_account) != address(0), 'The address of account is not valid!');
         UserTicket memory userTicket = ticketOf[_account];
 
         require(userTicket.ticketId != 0, 'This user has not bought ticket');
@@ -116,7 +124,8 @@ contract TicketManager is ITicketManager, Ownable {
      * @param _tokenId - The id of ticket
      * @return address - The address of owner the ticket
      */
-    function ownerOf(uint256 _tokenId) external view returns (address) { 
-        return _ticket.ownerOf(_tokenId);
+    function ownerOf(uint256 _tokenId) external view returns (address) {
+        require(_tokenId > 0, "The id of NFT must be greater than 0");
+        return ticket.ownerOf(_tokenId);
     }
 }

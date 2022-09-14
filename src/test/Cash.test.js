@@ -1,15 +1,18 @@
 const { expect } = require('chai');
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
 
 describe('Testing CashManager contract', () => {
     beforeEach(async () => {
-        const Cash = await ethers.getContractFactory('Cash');
-        const CashManger = await ethers.getContractFactory('CashManager');
-
         [owner, user] = await ethers.getSigners();
+        
+        const Cash = await ethers.getContractFactory('Cash');
+        const CashManager = await ethers.getContractFactory('CashManager');
 
-        cash = await Cash.deploy();
-        cashManager = await CashManger.deploy(cash.address);
+        cash = await upgrades.deployProxy(Cash);
+        await cash.deployed();
+
+        cashManager = await upgrades.deployProxy(CashManager, [cash.address]);
+        await cashManager.deployed();
     });
 
     describe('Testing `buy` function', () => {
