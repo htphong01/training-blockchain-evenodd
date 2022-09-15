@@ -4,6 +4,8 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import "./interfaces/ICash.sol";
 import "./interfaces/ICashManager.sol";
 import "./interfaces/ITicketManager.sol";
 
@@ -24,6 +26,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 roll2;
         bool isOdd;
     }
+
     IERC20Upgradeable public cash;
     ICashManager public cashManager;
     ITicketManager public ticketManager;
@@ -32,12 +35,29 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
-    function initialize(IERC20Upgradeable _cashAddress, ICashManager _cashManagerAddress, ITicketManager _ticketManagerAddress) initializer public {
+    function initialize(
+        ICash _cashAddress, 
+        ICashManager _cashManagerAddress, 
+        ITicketManager _ticketManagerAddress
+    ) initializer public {
+        __Ownable_init();
+        __ReentrancyGuard_init();
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_cashAddress), type(ICash).interfaceId), 
+            'Invalid Cash Manager contract'
+        );
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_cashManagerAddress), type(ICashManager).interfaceId), 
+            'Invalid Cash Manager contract'
+        );
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_ticketManagerAddress), type(ITicketManager).interfaceId), 
+            'Invalid Ticket Manager contract'
+        );
+
         cash = _cashAddress;
         cashManager = _cashManagerAddress;
         ticketManager = _ticketManagerAddress;
-        __Ownable_init();
-        __ReentrancyGuard_init();
     }
 
     receive() external payable {

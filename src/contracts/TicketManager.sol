@@ -2,10 +2,13 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import './interfaces/ITicket.sol';
 import './interfaces/ITicketManager.sol';
 
-contract TicketManager is OwnableUpgradeable, ITicketManager {
+contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager {
     event Bought(address indexed _account, uint256 indexed _ticketId);
     event SubTractedTimes(address indexed _account, uint256 _remainTimes);
     event ExtendedTicket(address indexed _account, uint256 _times);
@@ -21,16 +24,27 @@ contract TicketManager is OwnableUpgradeable, ITicketManager {
     mapping(address => UserTicket) public ticketOf;
     ITicket public ticket;
 
-    // constructor(address ticketAddress) {
-    //     ticket = ITicket(ticketAddress);
-    // }
 
-    function initialize(address _ticketAddress) initializer public {
-        // Validate _ticketAddress
+    function initialize(ITicket _ticketAddress) initializer public {
+        __Ownable_init();
+        __ERC165_init();
+
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_ticketAddress), type(ITicket).interfaceId), 
+            'Invalid Ticket contract'
+        );
         ticket = ITicket(_ticketAddress);
         ticketPrice = 10;
     }
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) {
+        return interfaceId == type(ITicketManager).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Modifier used to check the msg.value
+     * @param price The value want to check
+     */
     modifier costs(uint256 price) {
         require(msg.value == price, 'User must pay 10 wei to buy a ticket!');
         _;
