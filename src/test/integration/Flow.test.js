@@ -25,7 +25,7 @@ describe("[Integration Test] Testing flow of the game", () => {
 
         evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
         await evenOdd.deployed();
-        
+
         await cash.connect(owner).setOwner(cashManager.address);
         await ticket.connect(owner).setOwner(ticketManager.address);
 
@@ -145,11 +145,13 @@ describe("[Integration Test] Testing flow of the game", () => {
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
 
-        await expect(cashManager.connect(user1).withdraw(balanceOfUser)).to.changeEtherBalances(
-            [cashManager.address, user1.address],
-            [`-${balanceOfUser}`, balanceOfUser]
-        );
-        expect(await cash.balanceOf(user1.address)).to.equal(0);
+        if (balanceOfUser > 0) {
+            await expect(cashManager.connect(user1).withdraw(balanceOfUser)).to.changeEtherBalances(
+                [cashManager.address, user1.address],
+                [`-${balanceOfUser}`, balanceOfUser]
+            );
+            expect(await cash.balanceOf(user1.address)).to.equal(0);
+        }
     });
 
     it("Play 2 games with 3 user -> user1's ticket is expired -> extends ticket -> play 1 game with 3 users", async () => {
@@ -368,7 +370,7 @@ describe("[Integration Test] Testing flow of the game", () => {
             value: 10,
         });
         expect(await ticketManager.isExpired(user3.address)).to.be.false;
-        
+
         await cashManager.connect(user1).buy({
             value: ethers.utils.parseEther("1"),
         });
@@ -615,23 +617,29 @@ describe("[Integration Test] Testing flow of the game", () => {
         expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // withdraw token
-        await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
-            [cashManager.address, user1.address],
-            [`-${balanceOfUser1}`, balanceOfUser1]
-        );
-        expect(await cash.balanceOf(user1.address)).to.equal(0);
+        if (balanceOfUser1 > 0) {
+            await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
+                [cashManager.address, user1.address],
+                [`-${balanceOfUser1}`, balanceOfUser1]
+            );
+            expect(await cash.balanceOf(user1.address)).to.equal(0);
+        }
 
-        await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
-            [cashManager.address, user2.address],
-            [`-${balanceOfUser2}`, balanceOfUser2]
-        );
-        expect(await cash.balanceOf(user2.address)).to.equal(0);
+        if (balanceOfUser2 > 0) {
+            await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
+                [cashManager.address, user2.address],
+                [`-${balanceOfUser2}`, balanceOfUser2]
+            );
+            expect(await cash.balanceOf(user2.address)).to.equal(0);
+        }
 
-        await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
-            [cashManager.address, user3.address],
-            [`-${balanceOfUser3}`, balanceOfUser3]
-        );
-        expect(await cash.balanceOf(user3.address)).to.equal(0);
+        if (balanceOfUser3 > 0) {
+            await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
+                [cashManager.address, user3.address],
+                [`-${balanceOfUser3}`, balanceOfUser3]
+            );
+            expect(await cash.balanceOf(user3.address)).to.equal(0);
+        }
     });
 
     it('Ticket of user3 is expired -> Extends ticket -> Play 1 game with 3 users -> Ticket of user1 is expired -> Extends ticket -> User3 withdraw all token -> Play 1 game with 3 users (user3 does not have enough token to bet) -> User1 transfer to User3 -> Play 1 game with 3 users -> withdraw) ', async () => {
@@ -723,11 +731,13 @@ describe("[Integration Test] Testing flow of the game", () => {
         expect(await ticketManager.isExpired(user1.address)).to.be.false;
 
         // User3 withdraw all tokens
-        await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
-            [cashManager.address, user3.address],
-            [`-${balanceOfUser3}`, balanceOfUser3]
-        );
-        expect(await cash.balanceOf(user3.address)).to.equal(0);
+        if (balanceOfUser3 > 0) {
+            await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
+                [cashManager.address, user3.address],
+                [`-${balanceOfUser3}`, balanceOfUser3]
+            );
+            expect(await cash.balanceOf(user3.address)).to.equal(0);
+        }
 
         // Game 2
         latestMatchId = await evenOdd.latestMatchId();
@@ -796,22 +806,28 @@ describe("[Integration Test] Testing flow of the game", () => {
         expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // withdraw token
-        await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
-            [cashManager.address, user1.address],
-            [`-${balanceOfUser1}`, balanceOfUser1]
-        );
-        expect(await cash.balanceOf(user1.address)).to.equal(0);
+        if (balanceOfUser1 > 0) {
+            await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
+                [cashManager.address, user1.address],
+                [`-${balanceOfUser1}`, balanceOfUser1]
+            );
+            expect(await cash.balanceOf(user1.address)).to.equal(0);
+        }
 
-        await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
-            [cashManager.address, user2.address],
-            [`-${balanceOfUser2}`, balanceOfUser2]
-        );
-        expect(await cash.balanceOf(user2.address)).to.equal(0);
+        if (balanceOfUser2 > 0) {
+            await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
+                [cashManager.address, user2.address],
+                [`-${balanceOfUser2}`, balanceOfUser2]
+            );
+            expect(await cash.balanceOf(user2.address)).to.equal(0);
+        }
 
-        await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
-            [cashManager.address, user3.address],
-            [`-${balanceOfUser3}`, balanceOfUser3]
-        );
-        expect(await cash.balanceOf(user3.address)).to.equal(0);
+        if (balanceOfUser3 > 0) {
+            await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
+                [cashManager.address, user3.address],
+                [`-${balanceOfUser3}`, balanceOfUser3]
+            );
+            expect(await cash.balanceOf(user3.address)).to.equal(0);
+        }
     })
 });

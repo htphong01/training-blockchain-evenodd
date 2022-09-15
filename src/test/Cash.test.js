@@ -75,6 +75,16 @@ describe('Testing CashManager contract', () => {
             );
         });
 
+        it('[Fail]: Withdraw 0 cash', async () => {
+            await cash.connect(owner).setOwner(cashManager.address);
+            await cashManager.connect(user).buy({
+                value: ethers.utils.parseEther('1'),
+            });
+            await expect(cashManager.connect(user).withdraw(0)).to.be.revertedWith(
+                'Amount is must be greater than 0!'
+            );
+        });
+
         it('[OK]: User withdraw successfully', async () => {
             await cash.connect(owner).setOwner(cashManager.address);
             await cashManager.connect(user).buy({
