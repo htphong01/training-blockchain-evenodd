@@ -102,7 +102,9 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     function bet(bool _isOdd, uint256 _amount) external nonReentrant {
         require(_amount > 0, 'Value must be more than zero!');
+
         _validateBeforeBetting(_amount);
+        
         cash.transferFrom(msg.sender, address(this), _amount);
         ticketManager.subtractTimes(_msgSender());
         Player memory newPlayer = Player({

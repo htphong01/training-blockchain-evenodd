@@ -44,6 +44,12 @@ describe('Test EvenOdd Contract', () => {
     });
 
     describe('Testing `bet` function', () => {
+        it('[Fail]: Can not bet because amount of cash not greater than 0', async () => {
+            await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0'))).to.be.revertedWith(
+                "Value must be more than zero!"
+            );
+        });
+
         describe('Checking ticket of user', () => {
             it('[Fail]: Can not bet because user have not bought ticket', async () => {
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.1'))).to.be.revertedWith(
