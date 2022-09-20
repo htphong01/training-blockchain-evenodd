@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import '@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol';
 
 interface ITicketManager is IERC165Upgradeable {
-    function buy() external payable;
+    function buy(uint256 _times) external payable;
 
     function subtractTimes(address _account) external;
 

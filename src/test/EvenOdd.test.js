@@ -62,7 +62,7 @@ describe('Test EvenOdd Contract', () => {
             });
 
             it('[Fail]: Can not bet because ticket of user is expired', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
 
@@ -78,7 +78,7 @@ describe('Test EvenOdd Contract', () => {
 
         describe('Checking that user has already bet', () => {
             it('[Fail]: Can not bet because this user has betted before', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
 
@@ -98,7 +98,7 @@ describe('Test EvenOdd Contract', () => {
 
         describe('Checking the cash balance is enough to bet', () => {
             it('[Fail]: Can not bet because the balance of user is not enough', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
 
@@ -112,7 +112,7 @@ describe('Test EvenOdd Contract', () => {
             });
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
 
@@ -126,7 +126,7 @@ describe('Test EvenOdd Contract', () => {
             });
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
 
@@ -135,7 +135,7 @@ describe('Test EvenOdd Contract', () => {
                 });
                 await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('3'));
 
-                await ticketManager.connect(user2).buy({
+                await ticketManager.connect(user2).buy(3, {
                     value: 6,
                 });
 
@@ -151,7 +151,7 @@ describe('Test EvenOdd Contract', () => {
 
         describe(' Betting successfully', () => {
             it('[OK]: User betting successfully', async () => {
-                await ticketManager.connect(user1).buy({
+                await ticketManager.connect(user1).buy(3, {
                     value: 6,
                 });
                 await cashManager.connect(user1).buy({
@@ -192,7 +192,7 @@ describe('Test EvenOdd Contract', () => {
         it('[OK]: Match id is increased after play a game', async () => {
             const beforeMatchId = await evenOdd.lastMatch();
 
-            await ticketManager.connect(user1).buy({
+            await ticketManager.connect(user1).buy(3, {
                 value: 6,
             });
             await cashManager.connect(user1).buy({
@@ -207,7 +207,7 @@ describe('Test EvenOdd Contract', () => {
         });
 
         it('[OK]: Blance of user is increased/descreased after play', async () => {
-            await ticketManager.connect(user1).buy({
+            await ticketManager.connect(user1).buy(3, {
                 value: 6,
             });
             await cashManager.connect(user1).buy({
@@ -215,7 +215,7 @@ describe('Test EvenOdd Contract', () => {
             });
             await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
 
-            await ticketManager.connect(user2).buy({
+            await ticketManager.connect(user2).buy(3, {
                 value: 6,
             });
             await cashManager.connect(user2).buy({

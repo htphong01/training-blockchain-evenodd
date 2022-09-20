@@ -21,7 +21,6 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
 
     uint256 public lastTicket;
     uint256 public pricePerTime; // default: 2 wei
-    uint256 public timesPerTicket; // default: 3 times
 
     /**
      * @dev Save list user's tickets
@@ -32,7 +31,6 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
     event SubTractedTimes(address indexed _account, uint256 _remainTimes);
     event ExtendedTicket(address indexed _account, uint256 _times);
     event SetPricePerTime(uint256 indexed _price);
-    event SetTimesPerTicket(uint256 indexed _times);
 
     /**
      * @dev Modifier used to check the msg.value
@@ -57,7 +55,6 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
         );
         ticket = ITicket(_ticketAddress);
         pricePerTime = 2;
-        timesPerTicket = 3;
     }
 
     /**
@@ -77,7 +74,8 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Buy a ticket to play game. 0.1 eth -> 1 ticket
      * Emit {Bought} events
      */
-    function buy() external payable costs(timesPerTicket * pricePerTime) {
+    function buy(uint256 _times) external payable costs(pricePerTime * _times) {
+        require(_times > 0, 'The times must be greater than 0!');
         require(ticketOf[_msgSender()].ticketId == 0, 'This user has already bought ticket!');
 
         ticket.mint(_msgSender(), ++lastTicket);
@@ -109,7 +107,7 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Extend ticket when it was expired
      * Emit {ExtendedTicket} events
      */
-    function extendTicket(uint256 _times) external payable costs(_times * pricePerTime) {
+    function extendTicket(uint256 _times) external payable costs(pricePerTime * _times) {
         require(_times > 0, 'The times must be greater than 0!');
         UserTicket memory userTicket = ticketOf[_msgSender()];
 
@@ -178,16 +176,5 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
         require(_newPrice > 0, 'The new price must be greater than 0!');
         pricePerTime = _newPrice;
         emit SetPricePerTime(_newPrice);
-    }
-
-    /**
-     * @dev Set times per ticket everytime user buy a new ticket
-     * @param _times Times to bet everytime user buy a new ticket (> 0)
-     * emit {SetTimesPerTicket} events
-     */
-    function setTimesPerTicket(uint256 _times) external onlyOwner {
-        require(_times > 0, 'The times must be greater than 0!');
-        timesPerTicket = _times;
-        emit SetTimesPerTicket(_times);
     }
 }

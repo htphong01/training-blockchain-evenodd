@@ -37,7 +37,7 @@ describe('[Integration Test] Testing flow of the game', () => {
     });
 
     it("Play 3 games with 1 user -> User's ticket is expired -> Extends ticket -> Play 1 game with 1 user -> withdraw all token", async () => {
-        await ticketManager.connect(user1).buy({
+        await ticketManager.connect(user1).buy(3, {
             value: 6,
         });
         await cashManager.connect(user1).buy({
@@ -159,14 +159,14 @@ describe('[Integration Test] Testing flow of the game', () => {
             value: ethers.utils.parseEther('1'),
         });
 
-        await ticketManager.connect(user2).buy({
+        await ticketManager.connect(user2).buy(3, {
             value: 6,
         });
         await cashManager.connect(user2).buy({
             value: ethers.utils.parseEther('1'),
         });
 
-        await ticketManager.connect(user3).buy({
+        await ticketManager.connect(user3).buy(3, {
             value: 6,
         });
         await cashManager.connect(user3).buy({
