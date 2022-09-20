@@ -1,6 +1,9 @@
 node_modules
+coverage
 yarn.lock
 .prettierrc
 src/artifacts
 src/cache
+src/coverage.json
+src/bsc.json
 .env

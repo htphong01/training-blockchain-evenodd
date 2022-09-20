@@ -2,13 +2,15 @@ const { expect } = require('chai');
 const { ethers, upgrades } = require('hardhat');
 
 describe('Test EvenOdd Contract', () => {
-    beforeEach(async () => {
+    before(async () => {
         Cash = await ethers.getContractFactory('Cash');
         CashManager = await ethers.getContractFactory('CashManager');
         Ticket = await ethers.getContractFactory('Ticket');
         TicketManager = await ethers.getContractFactory('TicketManager');
         EvenOdd = await ethers.getContractFactory('EvenOdd');
+    });
 
+    beforeEach(async () => {
         [owner, user1, user2] = await ethers.getSigners();
 
         cash = await upgrades.deployProxy(Cash);
@@ -25,11 +27,13 @@ describe('Test EvenOdd Contract', () => {
 
         evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
         await evenOdd.deployed();
-        
+
         await cash.connect(owner).setOwner(cashManager.address);
         await ticket.connect(owner).setOwner(ticketManager.address);
 
-        await evenOdd.supplyToken({ value: ethers.utils.parseEther('5') });
+        await expect(evenOdd.supplyToken({ value: ethers.utils.parseEther('5') }))
+            .to.emit(evenOdd, 'SuppliedToken')
+            .withArgs(owner.address, ethers.utils.parseEther('5'));
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
@@ -46,7 +50,7 @@ describe('Test EvenOdd Contract', () => {
     describe('Testing `bet` function', () => {
         it('[Fail]: Can not bet because amount of cash not greater than 0', async () => {
             await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0'))).to.be.revertedWith(
-                "Value must be more than zero!"
+                'Value must be more than zero!'
             );
         });
 
@@ -82,7 +86,9 @@ describe('Test EvenOdd Contract', () => {
                     value: ethers.utils.parseEther('0.5'),
                 });
 
-                await evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.3'));
+                await expect(evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.3')))
+                    .to.emit(evenOdd, 'Betted')
+                    .withArgs(user1.address, 0, ethers.utils.parseEther('0.3'));
 
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'))).to.be.revertedWith(
                     'This user has betted before!'
@@ -151,13 +157,14 @@ describe('Test EvenOdd Contract', () => {
                 await cashManager.connect(user1).buy({
                     value: ethers.utils.parseEther('2'),
                 });
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseEther('1'))
-                ).to.changeTokenBalances(
-                    cash,
-                    [evenOdd.address, user1.address],
-                    [ethers.utils.parseEther('1'), ethers.utils.parseEther('-1')]
-                );
+                await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('1')))
+                    .to.changeTokenBalances(
+                        cash,
+                        [evenOdd.address, user1.address],
+                        [ethers.utils.parseEther('1'), ethers.utils.parseEther('-1')]
+                    )
+                    .to.emit(evenOdd, 'Betted')
+                    .withArgs(user1.address, 0, ethers.utils.parseEther('1'));
 
                 const userTicket = await ticketManager.ticketOf(user1.address);
                 const latestedMatchId = await evenOdd.latestMatchId();
@@ -169,7 +176,9 @@ describe('Test EvenOdd Contract', () => {
                 expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(
                     true
                 );
-                expect(player.bet, 'Token in match history must be the same as token the user has betted').to.equal(ethers.utils.parseEther('1'));
+                expect(player.bet, 'Token in match history must be the same as token the user has betted').to.equal(
+                    ethers.utils.parseEther('1')
+                );
             });
         });
     });

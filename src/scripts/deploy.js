@@ -7,15 +7,24 @@ async function main() {
     const TicketManager = await ethers.getContractFactory('TicketManager');
     const EvenOdd = await ethers.getContractFactory('EvenOdd');
 
-    const cash = await Cash.deploy();
-    const ticket = await Ticket.deploy();
-    const cashManager = await CashManager.deploy(cash.address);
-    const ticketManager = await TicketManager.deploy(ticket.address);
+    cash = await upgrades.deployProxy(Cash);
+    await cash.deployed();
+
+    ticket = await upgrades.deployProxy(Ticket);
+    await ticket.deployed();
+
+    cashManager = await upgrades.deployProxy(CashManager, [cash.address]);
+    await cashManager.deployed();
+
+    ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
+    await ticketManager.deployed();
 
     await cash.connect(deployer).setOwner(cashManager.address);
     await ticket.connect(deployer).setOwner(ticketManager.address);
 
-    const evenOdd = await EvenOdd.deploy(cash.address, cashManager.address, ticketManager.address);
+    evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
+    await evenOdd.deployed();
+
     console.log('cash', cash.address);
     console.log('ticket', ticket.address);
     console.log('cashManager', cashManager.address);

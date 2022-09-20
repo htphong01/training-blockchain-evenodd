@@ -7,6 +7,9 @@ import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import './interfaces/ITicket.sol';
 
 contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITicket {
+
+    event Minted(address _account, uint256 _tokenId);
+
     function initialize() public initializer {
         __ERC721_init('Ticket', 'Ticket');
         __Ownable_init();
@@ -26,6 +29,8 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
         require(_to != address(0), 'Address is not valid!');
         require(_tokenId > 0, 'TokenId is must be greater than 0!');
         _mint(_to, _tokenId);
+
+        emit Minted(_to, _tokenId);
     }
 
     /**

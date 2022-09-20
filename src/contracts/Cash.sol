@@ -8,6 +8,9 @@ import './interfaces/ICash.sol';
 
 contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash {
 
+    event Minted(address indexed _account, uint256 _amount);
+    event Burned(address indexed _account, uint256 _amount);
+
     function initialize() initializer public {
         __ERC20_init('Cash', 'C');
         __Ownable_init();
@@ -27,6 +30,8 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
         require(_account != address(0), 'Address is not valid!');
         require(_amount > 0, 'Amount is must be greater than 0!');
         _mint(_account, _amount);
+
+        emit Minted(_account, _amount);
     }
 
     /**
@@ -38,6 +43,8 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
         require(_account != address(0), 'Address is not valid!');
         require(_amount > 0, 'Amount is must be greater than 0!');
         _burn(_account, _amount);
+
+        emit Burned(_account, _amount);
     }
 
     /**
