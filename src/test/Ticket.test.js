@@ -16,18 +16,18 @@ describe('Testing Ticket contract', function () {
         ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
         await ticketManager.deployed();
 
-        await ticket.connect(owner).setOwner(ticketManager.address);
+        await ticket.connect(owner).transferOwnership(ticketManager.address);
     });
 
     describe('Testing `buy` function', () => {
         it('[Fail]: Check user buy more than 2 tickets', async () => {
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
 
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             ).to.be.revertedWith('This user has already bought ticket!');
         });
@@ -37,34 +37,34 @@ describe('Testing Ticket contract', function () {
                 ticketManager.connect(user1).buy({
                     value: 9,
                 })
-            ).to.be.revertedWith('User must pay 10 wei to buy a ticket!');
+            ).to.be.revertedWith('User must pay enough fee!');
         });
 
         it('[OK]: Buy ticket successfully', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
                 .withArgs(user1.address, 1);
 
-            const latestedTicketId1 = await ticketManager.latestedTicket();
+            const lastTicketId1 = await ticketManager.lastTicket();
             const user1TicketId = await ticketManager.getTicketId(user1.address);
-            expect(user1TicketId, 'ticketId of user1 must be equal to latestedTicketId1').to.equal(latestedTicketId1);
+            expect(user1TicketId, 'ticketId of user1 must be equal to lastTicketId1').to.equal(lastTicketId1);
 
             await expect(
                 ticketManager.connect(user2).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
-                .withArgs(user2.address, +latestedTicketId1 + 1);
+                .withArgs(user2.address, +lastTicketId1 + 1);
 
-            const latestedTicketId2 = await ticketManager.latestedTicket();
+            const lastTicketId2 = await ticketManager.lastTicket();
             const user2TicketId = await ticketManager.getTicketId(user2.address);
 
-            expect(user2TicketId, 'ticketId of user2 must be equal to latestedTicketId2').to.equal(latestedTicketId2);
+            expect(user2TicketId, 'ticketId of user2 must be equal to lastTicketId2').to.equal(lastTicketId2);
         });
     });
 
@@ -84,7 +84,7 @@ describe('Testing Ticket contract', function () {
         it('[Fail]: Subtract times when ticket expired', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
@@ -108,7 +108,7 @@ describe('Testing Ticket contract', function () {
         it('[OK]: Subtract times successfully', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
@@ -122,51 +122,53 @@ describe('Testing Ticket contract', function () {
         });
     });
 
-    describe('Testing `extendTicket` function', () => {
+    describe('Testing `extendTicket`,  function', () => {
         it('[Fail]: User has not bought ticket', async () => {
             await expect(
-                ticketManager.connect(user1).extendTicket({
-                    value: 10,
+                ticketManager.connect(user1).extendTicket(3, {
+                    value: 6,
                 })
             ).to.be.revertedWith('This user has not bought ticket!');
         });
 
-        it('[Fail]: User ticket has not been expired', async () => {
+        it('[Fail]: User buy 0 times', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
                 .withArgs(user1.address, 1);
 
             await expect(
-                ticketManager.connect(user1).extendTicket({
-                    value: 10,
+                ticketManager.connect(user1).extendTicket(0, {
+                    value: 0,
                 })
-            ).to.be.revertedWith('This ticket has not been expired!');
+            ).to.be.revertedWith('The times must be greater than 0!');
 
             await expect(
                 ticketManager.connect(user2).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
                 .withArgs(user2.address, 2);
+
             await expect(await ticketManager.subtractTimes(user2.address))
                 .to.emit(ticketManager, 'SubTractedTimes')
                 .withArgs(user2.address, 2);
+
             await expect(
-                ticketManager.connect(user2).extendTicket({
-                    value: 10,
+                ticketManager.connect(user2).extendTicket(0, {
+                    value: 0,
                 })
-            ).to.be.revertedWith('This ticket has not been expired!');
+            ).to.be.revertedWith('The times must be greater than 0!');
         });
 
-        it('[Fail]: User must pay 10 wei to buy a ticket!', async () => {
+        it('[Fail]: User must pay enough fee!', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
@@ -186,16 +188,16 @@ describe('Testing Ticket contract', function () {
 
             expect(await ticketManager.isExpired(user1.address)).to.equal(true);
             await expect(
-                ticketManager.connect(user1).extendTicket({
-                    value: ethers.utils.parseEther('0.09'),
+                ticketManager.connect(user1).extendTicket(3, {
+                    value: 9,
                 })
-            ).to.be.revertedWith('User must pay 10 wei to buy a ticket!');
+            ).to.be.revertedWith('User must pay enough fee!');
         });
 
         it('[OK]: User extends ticket successful', async () => {
             await expect(
                 ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'Bought')
@@ -215,8 +217,8 @@ describe('Testing Ticket contract', function () {
 
             expect(await ticketManager.isExpired(user1.address)).to.equal(true);
             await expect(
-                ticketManager.connect(user1).extendTicket({
-                    value: 10,
+                ticketManager.connect(user1).extendTicket(3, {
+                    value: 6,
                 })
             )
                 .to.emit(ticketManager, 'ExtendedTicket')
@@ -240,14 +242,14 @@ describe('Testing Ticket contract', function () {
 
         it('[OK]: Ticket of user is not expired', async () => {
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
             expect(await ticketManager.isExpired(user1.address)).to.be.equal(false);
         });
 
         it('[OK]: Ticket of user is not expired after betting 2 times', async () => {
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
             await ticketManager.subtractTimes(user1.address);
             await ticketManager.subtractTimes(user1.address);
@@ -256,12 +258,34 @@ describe('Testing Ticket contract', function () {
 
         it('[OK]: Ticket of user is expired after betting 3 times', async () => {
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
             await ticketManager.subtractTimes(user1.address);
             await ticketManager.subtractTimes(user1.address);
             await ticketManager.subtractTimes(user1.address);
             expect(await ticketManager.isExpired(user1.address)).to.be.equal(true);
+        });
+    });
+
+    describe('Testing `setPricePerTime` function', () => {
+        it('[Fail]: New price is equal to 0', async () => {
+            await expect(ticketManager.setPricePerTime(0)).to.be.revertedWith('The new price must be greater than 0!');
+        });
+
+        it('[OK] Set new price successfully', async () => {
+            await expect(ticketManager.setPricePerTime(5)).to.be.emit(ticketManager, 'SetPricePerTime').withArgs(5);
+            expect(await ticketManager.pricePerTime()).to.equal(5);
+        });
+    });
+
+    describe('Testing `setTimesPerTicket` function', () => {
+        it('[Fail]: New times is equal to 0', async () => {
+            await expect(ticketManager.setTimesPerTicket(0)).to.be.revertedWith('The times must be greater than 0!');
+        });
+
+        it('[OK] Set new price successfully', async () => {
+            await expect(ticketManager.setTimesPerTicket(5)).to.be.emit(ticketManager, 'SetTimesPerTicket').withArgs(5);
+            expect(await ticketManager.timesPerTicket()).to.equal(5);
         });
     });
 });

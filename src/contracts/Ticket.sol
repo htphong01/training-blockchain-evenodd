@@ -10,12 +10,18 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
 
     event Minted(address _account, uint256 _tokenId);
 
+    /**
+     * @dev Replace for constructor function in order to be upgradeable
+     */
     function initialize() public initializer {
         __ERC721_init('Ticket', 'Ticket');
         __Ownable_init();
         __ERC165_init();
     }
 
+    /**
+     * @dev Override function `supportsInterface` when using ERC165
+     */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
         return interfaceId == type(ITicket).interfaceId || super.supportsInterface(interfaceId);
     }
@@ -31,14 +37,5 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
         _mint(_to, _tokenId);
 
         emit Minted(_to, _tokenId);
-    }
-
-    /**
-     * @dev Used to set new owner of the contract
-     * @param _newOwner Address of new owner
-     */
-    function setOwner(address _newOwner) external onlyOwner {
-        require(_newOwner != address(0), 'Address is not valid!');
-        _transferOwnership(_newOwner);
     }
 }

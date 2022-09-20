@@ -8,7 +8,7 @@ interface ITicketManager is IERC165Upgradeable {
 
     function subtractTimes(address _account) external;
 
-    function extendTicket() external payable;
+    function extendTicket(uint256 _times) external payable;
 
     function isExpired(address _account) external view returns (bool);
 

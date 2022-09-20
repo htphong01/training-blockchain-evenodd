@@ -8,6 +8,4 @@ interface ICash is IERC165Upgradeable, IERC20Upgradeable {
     function mint(address userAddress, uint256 amount) external;
 
     function burn(address userAddress, uint256 amount) external;
-
-    function setOwner(address newOwner) external;
 }

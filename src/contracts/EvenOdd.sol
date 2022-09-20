@@ -9,10 +9,6 @@ import './interfaces/ICashManager.sol';
 import './interfaces/ITicketManager.sol';
 
 contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
-    event Betted(address indexed _account, uint256 indexed _gameId, uint256 _amount);
-    event Played(uint256 indexed _gameId, bool _isOdd);
-    event Received(address indexed _from, uint256 _amount);
-    event SuppliedToken(address indexed _from, uint256 _amount);
 
     struct Player {
         uint256 ticketId;
@@ -43,10 +39,22 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      */
     ITicketManager public ticketManager;
 
-    uint256 public latestMatchId;
+    uint256 public lastMatch;
+
     mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
     mapping(uint256 => Match) public matchList;
 
+    event Betted(address indexed _account, uint256 indexed _gameId, uint256 _amount);
+    event Played(uint256 indexed _gameId, bool _isOdd);
+    event Received(address indexed _from, uint256 _amount);
+    event SuppliedToken(address indexed _from, uint256 _amount);
+
+    /**
+     * @dev Replace for constructor function in order to be upgradeable
+     * @param _cashAddress Address of contract Cash
+     * @param _cashManagerAddress Address of contract CashManager
+     * @param _ticketManagerAddress Address of contract TicketManager
+     */
     function initialize(
         ICash _cashAddress,
         ICashManager _cashManagerAddress,
@@ -113,9 +121,9 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             bet: _amount
         });
 
-        playerList[latestMatchId].push(newPlayer);
+        playerList[lastMatch].push(newPlayer);
 
-        emit Betted(_msgSender(), latestMatchId, _amount);
+        emit Betted(_msgSender(), lastMatch, _amount);
     }
 
     /**
@@ -127,7 +135,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _roll();
         _endGame();
 
-        emit Played(latestMatchId - 1, matchList[latestMatchId - 1].isOdd);
+        emit Played(lastMatch - 1, matchList[lastMatch - 1].isOdd);
     }
 
     /**
@@ -145,7 +153,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(isExpired != true, "This user's ticket is expired. Please buy a new one to play");
 
         // Checking whether user has already betted before
-        Player[] memory players = playerList[latestMatchId];
+        Player[] memory players = playerList[lastMatch];
 
         for (uint256 i = 0; i < players.length; i++) {
             require(players[i].ticketId != ticketId, 'This user has betted before!');
@@ -173,8 +181,8 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) - block.number / 3;
         uint256 roll2 = (((block.timestamp / block.chainid + 5) % 23) + block.number * 2 + block.difficulty) / 4;
 
-        matchList[latestMatchId].roll1 = uint256(roll1 % 6) + 1;
-        matchList[latestMatchId].roll2 = uint256(roll2 % 6) + 1;
+        matchList[lastMatch].roll1 = uint256(roll1 % 6) + 1;
+        matchList[lastMatch].roll2 = uint256(roll2 % 6) + 1;
     }
 
     /**
@@ -182,10 +190,10 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      *      Increase matchId by 1
      */
     function _endGame() private {
-        Player[] memory players = playerList[latestMatchId];
-        Match memory currentMatch = matchList[latestMatchId];
+        Player[] memory players = playerList[lastMatch];
+        Match memory currentMatch = matchList[lastMatch];
         bool isOdd = (currentMatch.roll1 + currentMatch.roll2) % 2 == 1;
-        matchList[latestMatchId].isOdd = isOdd;
+        matchList[lastMatch].isOdd = isOdd;
 
         for (uint256 i = 0; i < players.length; i++) {
             if (players[i].isOdd == isOdd) {
@@ -193,6 +201,6 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
             }
         }
 
-        ++latestMatchId;
+        ++lastMatch;
     }
 }

@@ -6,7 +6,4 @@ import '@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeab
 
 interface ITicket is IERC165Upgradeable, IERC721Upgradeable {
     function mint(address _to, uint256 _tokenId) external;
-
-    function setOwner(address _newOwner) external;
-
 }

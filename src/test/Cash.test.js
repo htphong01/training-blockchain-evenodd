@@ -27,7 +27,7 @@ describe('Testing CashManager contract', () => {
         });
 
         it('[Fail]: Set new owner so old owner can not calling mint function ', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
 
             await expect(cash.connect(owner).mint(user.address, ethers.utils.parseEther('1'))).to.be.revertedWith(
                 'Ownable: caller is not the owner'
@@ -35,12 +35,12 @@ describe('Testing CashManager contract', () => {
         });
 
         it('[OK]: Set new owner to Cash contract ', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
             expect(cashManager.address).to.equal(await cash.owner());
         });
 
         it('[OK]: User buy cash successfully', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
 
             await expect(
                 cashManager.connect(user).buy({
@@ -64,14 +64,14 @@ describe('Testing CashManager contract', () => {
 
     describe('Testing `withdraw` function', () => {
         it('[Fail]: Balance of user is not enough', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(cashManager.connect(user).withdraw(ethers.utils.parseEther('2'))).to.be.revertedWith(
                 'ERC20: burn amount exceeds balance'
             );
         });
 
         it('[Fail]: Balance of user is not enough', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
                     value: ethers.utils.parseEther('1'),
@@ -86,7 +86,7 @@ describe('Testing CashManager contract', () => {
         });
 
         it('[Fail]: Withdraw 0 cash', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
                     value: ethers.utils.parseEther('1'),
@@ -99,7 +99,7 @@ describe('Testing CashManager contract', () => {
         });
 
         it('[OK]: User withdraw successfully', async () => {
-            await cash.connect(owner).setOwner(cashManager.address);
+            await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
                     value: ethers.utils.parseEther('1'),

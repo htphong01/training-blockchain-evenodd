@@ -19,8 +19,8 @@ async function main() {
     ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
     await ticketManager.deployed();
 
-    await cash.connect(deployer).setOwner(cashManager.address);
-    await ticket.connect(deployer).setOwner(ticketManager.address);
+    await cash.connect(deployer).transferOwnership(cashManager.address);
+    await ticket.connect(deployer).transferOwnership(ticketManager.address);
 
     evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
     await evenOdd.deployed();

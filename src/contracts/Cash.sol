@@ -11,12 +11,18 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
     event Minted(address indexed _account, uint256 _amount);
     event Burned(address indexed _account, uint256 _amount);
 
+    /**
+     * @dev Replace for constructor function in order to be upgradeable
+     */
     function initialize() initializer public {
         __ERC20_init('Cash', 'C');
         __Ownable_init();
         __ERC165_init();
     }
 
+    /**
+     * @dev Override function `supportsInterface` when using ERC165
+     */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) {
         return interfaceId == type(ICash).interfaceId || super.supportsInterface(interfaceId);
     }
@@ -45,14 +51,5 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
         _burn(_account, _amount);
 
         emit Burned(_account, _amount);
-    }
-
-    /**
-     * @dev Used to set new owner of the contract
-     * @param _newOwner Address of new owner
-     */
-    function setOwner(address _newOwner) external onlyOwner {
-        require(_newOwner != address(0), 'Address is not valid!');
-        _transferOwnership(_newOwner);
     }
 }

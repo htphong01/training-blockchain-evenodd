@@ -1,26 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol';
 import './interfaces/ITicket.sol';
 import './interfaces/ITicketManager.sol';
 
 contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager {
-    event Bought(address indexed _account, uint256 indexed _ticketId);
-    event SubTractedTimes(address indexed _account, uint256 _remainTimes);
-    event ExtendedTicket(address indexed _account, uint256 _times);
-
     struct UserTicket {
         uint256 ticketId;
         uint256 times;
     }
-
-    uint256 public latestedTicket;
-    uint256 public ticketPrice; // 10 wei -> 1 ticket
-
-    mapping(address => UserTicket) public ticketOf;
 
     /**
      * @dev Ticket contract interface
@@ -28,44 +19,73 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      */
     ITicket public ticket;
 
-    function initialize(ITicket _ticketAddress) initializer public {
-        __Ownable_init();
-        __ERC165_init();
+    uint256 public lastTicket;
+    uint256 public pricePerTime; // default: 2 wei
+    uint256 public timesPerTicket; // default: 3 times
 
-        require(
-            ERC165CheckerUpgradeable.supportsInterface(address(_ticketAddress), type(ITicket).interfaceId), 
-            'Invalid Ticket contract'
-        );
-        ticket = ITicket(_ticketAddress);
-        ticketPrice = 10;
-    }
+    /**
+     * @dev Save list user's tickets
+     */
+    mapping(address => UserTicket) public ticketOf;
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) {
-        return interfaceId == type(ITicketManager).interfaceId || super.supportsInterface(interfaceId);
-    }
+    event Bought(address indexed _account, uint256 indexed _ticketId);
+    event SubTractedTimes(address indexed _account, uint256 _remainTimes);
+    event ExtendedTicket(address indexed _account, uint256 _times);
+    event SetPricePerTime(uint256 indexed _price);
+    event SetTimesPerTicket(uint256 indexed _times);
 
     /**
      * @dev Modifier used to check the msg.value
      * @param price The value want to check
      */
     modifier costs(uint256 price) {
-        require(msg.value == price, 'User must pay 10 wei to buy a ticket!');
+        require(msg.value == price, 'User must pay enough fee!');
         _;
+    }
+
+    /**
+     * @dev Replace for constructor function in order to be upgradeable
+     * @param _ticketAddress Address of contract Ticket
+     */
+    function initialize(ITicket _ticketAddress) public initializer {
+        __Ownable_init();
+        __ERC165_init();
+
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_ticketAddress), type(ITicket).interfaceId),
+            'Invalid Ticket contract'
+        );
+        ticket = ITicket(_ticketAddress);
+        pricePerTime = 2;
+        timesPerTicket = 3;
+    }
+
+    /**
+     * @dev Override function `supportsInterface` when using ERC165
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165Upgradeable, IERC165Upgradeable)
+        returns (bool)
+    {
+        return interfaceId == type(ITicketManager).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev Buy a ticket to play game. 0.1 eth -> 1 ticket
      * Emit {Bought} events
      */
-    function buy() external payable costs(ticketPrice) {
+    function buy() external payable costs(timesPerTicket * pricePerTime) {
         require(ticketOf[_msgSender()].ticketId == 0, 'This user has already bought ticket!');
 
-        ticket.mint(_msgSender(), ++latestedTicket);
+        ticket.mint(_msgSender(), ++lastTicket);
 
-        ticketOf[_msgSender()].ticketId = latestedTicket;
+        ticketOf[_msgSender()].ticketId = lastTicket;
         ticketOf[_msgSender()].times = 3;
 
-        emit Bought(_msgSender(), latestedTicket);
+        emit Bought(_msgSender(), lastTicket);
     }
 
     /**
@@ -89,15 +109,15 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Extend ticket when it was expired
      * Emit {ExtendedTicket} events
      */
-    function extendTicket() external payable costs(ticketPrice) {
+    function extendTicket(uint256 _times) external payable costs(_times * pricePerTime) {
+        require(_times > 0, 'The times must be greater than 0!');
         UserTicket memory userTicket = ticketOf[_msgSender()];
 
         require(userTicket.ticketId != 0, 'This user has not bought ticket!');
-        require(userTicket.times == 0, 'This ticket has not been expired!');
 
-        ticketOf[_msgSender()].times = 3;
+        ticketOf[_msgSender()].times += _times;
 
-        emit ExtendedTicket(_msgSender(), 3);
+        emit ExtendedTicket(_msgSender(), ticketOf[_msgSender()].times);
     }
 
     /**
@@ -145,7 +165,29 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @return address The address of owner the ticket
      */
     function ownerOf(uint256 _tokenId) external view returns (address) {
-        require(_tokenId > 0, "The id of NFT must be greater than 0");
+        require(_tokenId > 0, 'The id of NFT must be greater than 0');
         return ticket.ownerOf(_tokenId);
+    }
+
+    /**
+     * @dev Set price per times to play
+     * @param _newPrice New price for each time to bet (> 0)
+     * emit {SetPricePerTime} events
+     */
+    function setPricePerTime(uint256 _newPrice) external onlyOwner {
+        require(_newPrice > 0, 'The new price must be greater than 0!');
+        pricePerTime = _newPrice;
+        emit SetPricePerTime(_newPrice);
+    }
+
+    /**
+     * @dev Set times per ticket everytime user buy a new ticket
+     * @param _times Times to bet everytime user buy a new ticket (> 0)
+     * emit {SetTimesPerTicket} events
+     */
+    function setTimesPerTicket(uint256 _times) external onlyOwner {
+        require(_times > 0, 'The times must be greater than 0!');
+        timesPerTicket = _times;
+        emit SetTimesPerTicket(_times);
     }
 }

@@ -28,8 +28,8 @@ describe('Test EvenOdd Contract', () => {
         evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
         await evenOdd.deployed();
 
-        await cash.connect(owner).setOwner(cashManager.address);
-        await ticket.connect(owner).setOwner(ticketManager.address);
+        await cash.connect(owner).transferOwnership(cashManager.address);
+        await ticket.connect(owner).transferOwnership(ticketManager.address);
 
         await expect(evenOdd.supplyToken({ value: ethers.utils.parseEther('5') }))
             .to.emit(evenOdd, 'SuppliedToken')
@@ -63,7 +63,7 @@ describe('Test EvenOdd Contract', () => {
 
             it('[Fail]: Can not bet because ticket of user is expired', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await ticketManager.subtractTimes(user1.address);
@@ -79,7 +79,7 @@ describe('Test EvenOdd Contract', () => {
         describe('Checking that user has already bet', () => {
             it('[Fail]: Can not bet because this user has betted before', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await cashManager.connect(user1).buy({
@@ -99,7 +99,7 @@ describe('Test EvenOdd Contract', () => {
         describe('Checking the cash balance is enough to bet', () => {
             it('[Fail]: Can not bet because the balance of user is not enough', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await cashManager.connect(user1).buy({
@@ -113,7 +113,7 @@ describe('Test EvenOdd Contract', () => {
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await cashManager.connect(user1).buy({
@@ -127,7 +127,7 @@ describe('Test EvenOdd Contract', () => {
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await cashManager.connect(user1).buy({
@@ -136,7 +136,7 @@ describe('Test EvenOdd Contract', () => {
                 await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('3'));
 
                 await ticketManager.connect(user2).buy({
-                    value: 10,
+                    value: 6,
                 });
 
                 await cashManager.connect(user2).buy({
@@ -152,7 +152,7 @@ describe('Test EvenOdd Contract', () => {
         describe(' Betting successfully', () => {
             it('[OK]: User betting successfully', async () => {
                 await ticketManager.connect(user1).buy({
-                    value: 10,
+                    value: 6,
                 });
                 await cashManager.connect(user1).buy({
                     value: ethers.utils.parseEther('2'),
@@ -167,8 +167,8 @@ describe('Test EvenOdd Contract', () => {
                     .withArgs(user1.address, 0, ethers.utils.parseEther('1'));
 
                 const userTicket = await ticketManager.ticketOf(user1.address);
-                const latestedMatchId = await evenOdd.latestMatchId();
-                const player = await evenOdd.playerList(latestedMatchId, 0);
+                const lastMatch = await evenOdd.lastMatch();
+                const player = await evenOdd.playerList(lastMatch, 0);
 
                 expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(
                     userTicket.ticketId
@@ -190,10 +190,10 @@ describe('Test EvenOdd Contract', () => {
         });
 
         it('[OK]: Match id is increased after play a game', async () => {
-            const beforeMatchId = await evenOdd.latestMatchId();
+            const beforeMatchId = await evenOdd.lastMatch();
 
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
             await cashManager.connect(user1).buy({
                 value: ethers.utils.parseEther('0.5'),
@@ -202,13 +202,13 @@ describe('Test EvenOdd Contract', () => {
             await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
             await evenOdd.play();
 
-            const afterMatchId = await evenOdd.latestMatchId();
+            const afterMatchId = await evenOdd.lastMatch();
             expect(afterMatchId - beforeMatchId, 'Match id must be increased after play').to.be.equal(1);
         });
 
         it('[OK]: Blance of user is increased/descreased after play', async () => {
             await ticketManager.connect(user1).buy({
-                value: 10,
+                value: 6,
             });
             await cashManager.connect(user1).buy({
                 value: ethers.utils.parseEther('0.5'),
@@ -216,17 +216,17 @@ describe('Test EvenOdd Contract', () => {
             await evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.2'));
 
             await ticketManager.connect(user2).buy({
-                value: 10,
+                value: 6,
             });
             await cashManager.connect(user2).buy({
                 value: ethers.utils.parseEther('0.5'),
             });
             await evenOdd.connect(user2).bet(false, ethers.utils.parseEther('0.2'));
 
-            const latestedMatchId = await evenOdd.latestMatchId();
+            const lastMatch = await evenOdd.lastMatch();
             await evenOdd.play();
 
-            const currentMatch = await evenOdd.matchList(latestedMatchId);
+            const currentMatch = await evenOdd.matchList(lastMatch);
             const isOdd = currentMatch.isOdd;
             let balanceOfUser1 = ethers.BigNumber.from(ethers.utils.parseEther('0.3'));
             let balanceOfUser2 = ethers.BigNumber.from(ethers.utils.parseEther('0.3'));
