@@ -27,7 +27,7 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      */
     mapping(address => UserTicket) public ticketOf;
 
-    event Bought(address indexed _account, uint256 indexed _ticketId);
+    event Bought(address indexed _account, uint256 _times, uint256 indexed _ticketId);
     event SubTractedTimes(address indexed _account, uint256 _remainTimes);
     event ExtendedTicket(address indexed _account, uint256 _times);
     event SetPricePerTime(uint256 indexed _price);
@@ -81,9 +81,9 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
         ticket.mint(_msgSender(), ++lastTicket);
 
         ticketOf[_msgSender()].ticketId = lastTicket;
-        ticketOf[_msgSender()].times = 3;
+        ticketOf[_msgSender()].times = _times;
 
-        emit Bought(_msgSender(), lastTicket);
+        emit Bought(_msgSender(), _times, lastTicket);
     }
 
     /**
