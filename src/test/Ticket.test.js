@@ -58,7 +58,7 @@ describe('Testing Ticket contract', function () {
                 .withArgs(user1.address, 10, 1);
 
             const lastTicketId1 = await ticketManager.lastTicket();
-            const user1TicketId = await ticketManager.getTicketId(user1.address);
+            const user1TicketId = (await ticketManager.ticketOf(user1.address)).ticketId;
             expect(user1TicketId, 'ticketId of user1 must be equal to lastTicketId1').to.equal(lastTicketId1);
 
             await expect(
@@ -70,7 +70,7 @@ describe('Testing Ticket contract', function () {
                 .withArgs(user2.address, 3, +lastTicketId1 + 1);
 
             const lastTicketId2 = await ticketManager.lastTicket();
-            const user2TicketId = await ticketManager.getTicketId(user2.address);
+            const user2TicketId = (await ticketManager.ticketOf(user2.address)).ticketId;
 
             expect(user2TicketId, 'ticketId of user2 must be equal to lastTicketId2').to.equal(lastTicketId2);
         });
@@ -134,7 +134,7 @@ describe('Testing Ticket contract', function () {
                 .to.emit(ticketManager, 'SubTractedTimes')
                 .withArgs(user1.address, 2);
 
-            expect(await ticketManager.getTicketTimes(user1.address)).to.equal(2);
+            expect((await ticketManager.ticketOf(user1.address)).times).to.equal(2);
         });
     });
 

@@ -14,7 +14,5 @@ interface ITicketManager is IERC165Upgradeable {
 
     function getTicketId(address _account) external view returns (uint256);
 
-    function getTicketTimes(address _account) external view returns (uint256);
-
     function ownerOf(uint256 _ticketId) external view returns (address);
 }

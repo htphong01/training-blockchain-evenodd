@@ -143,21 +143,6 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
     }
 
     /**
-     * @dev Get times of a ticket
-     * @param _account Address of user's ticket
-     * @return ticketTimes The time that this ticket can be used to bet
-     */
-    function getTicketTimes(address _account) external view returns (uint256) {
-        require(_account != address(0), 'The address of account is not valid!');
-        UserTicket memory userTicket = ticketOf[_account];
-
-        require(userTicket.ticketId != 0, 'This user has not bought ticket');
-        require(userTicket.times > 0, 'This ticket has expired!');
-
-        return userTicket.times;
-    }
-
-    /**
      * @dev Get owner of the ticket
      * @param _tokenId The id of ticket
      * @return address The address of owner the ticket
