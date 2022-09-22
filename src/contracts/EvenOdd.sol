@@ -117,7 +117,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _validateBeforeBetting(_amount);
 
         require(cash.transferFrom(_msgSender(), address(this), _amount), 'Transfer betted cash is not successful!');
-        require(totalCashBetted += _amount > totalCashBetted, 'Overflow betted cash!');
+        require(totalCashBetted + _amount > totalCashBetted, 'Overflow betted cash!');
         totalCashBetted += _amount;
         ticketManager.subtractTimes(_msgSender());
         
@@ -166,8 +166,8 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         // Checking balance of user is enough to bet, and the balance of contract is enough to reward
         require(cash.balanceOf(_msgSender()) >= _amount, "User's balance is not enough to bet");
-        
-        require(totalCashBetted += _amount > totalCashBetted, 'Overflow betted cash!');
+
+        require(totalCashBetted + _amount > totalCashBetted, 'Overflow betted cash!');
         uint256 totalCashReward = (totalCashBetted + _amount) * 2;
         require(
             totalCashReward <= (cash.balanceOf(address(this)) + _amount),

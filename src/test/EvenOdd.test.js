@@ -314,7 +314,7 @@ describe('Test EvenOdd Contract', () => {
                 balanceOfUser2 = balanceOfUser2.add(ethers.utils.parseEther('0.4'));
                 await expect(evenOdd.connect(user2).withdrawRefund(lastMatch))
                     .to.emit(evenOdd, 'WithDrawnRefund')
-                    .withArgs(user1.address, lastMatch, ethers.utils.parseEther('0.4'));
+                    .withArgs(user2.address, lastMatch, ethers.utils.parseEther('0.4'));
             }
 
             expect(await cash.balanceOf(user1.address)).to.equal(balanceOfUser1);
