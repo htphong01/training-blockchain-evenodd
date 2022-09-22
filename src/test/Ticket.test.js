@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { ethers, upgrades } = require('hardhat');
 
-describe.only('Testing Ticket contract', function () {
+describe('Testing Ticket contract', function () {
     before(async () => {
         Ticket = await ethers.getContractFactory('Ticket');
         TicketManager = await ethers.getContractFactory('TicketManager');
@@ -272,7 +272,7 @@ describe.only('Testing Ticket contract', function () {
 
             const userRemainingTimes = (await ticketManager.ticketOf(user1.address)).times;
             expect(userRemainingTimes).to.equal(8);
-        })
+        });
     });
 
     describe('Testing `isExpired` function', () => {

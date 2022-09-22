@@ -4,16 +4,17 @@ pragma solidity 0.8.9;
 import '@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/security/PullPaymentUpgradeable.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
 import './interfaces/ITicketManager.sol';
 
 contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
-
     struct Player {
         uint256 ticketId;
         bool isOdd;
         uint256 bet;
+        bool isRewarded;
     }
 
     struct Match {
@@ -40,14 +41,16 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ITicketManager public ticketManager;
 
     uint256 public lastMatch;
+    uint256 public totalCashBetted;
 
-    mapping(uint256 => Player[]) public playerList; // each match has multiple players, find by match id
+    mapping(uint256 => mapping(uint256 => Player)) public playerList; // each match has multiple players (mapping by ticketId), find by match id
     mapping(uint256 => Match) public matchList;
 
     event Betted(address indexed _account, uint256 indexed _gameId, uint256 _amount);
     event Played(uint256 indexed _gameId, bool _isOdd);
     event Received(address indexed _from, uint256 _amount);
     event SuppliedToken(address indexed _from, uint256 _amount);
+    event WithDrawnRefund(address indexed _to, uint256 indexed _matchId, uint256 _refund);
 
     /**
      * @dev Replace for constructor function in order to be upgradeable
@@ -112,16 +115,20 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(_amount > 0, 'Value must be more than zero!');
 
         _validateBeforeBetting(_amount);
-        
-        cash.transferFrom(msg.sender, address(this), _amount);
+
+        require(cash.transferFrom(_msgSender(), address(this), _amount), 'Transfer betted cash is not successful!');
+        totalCashBetted += _amount;
         ticketManager.subtractTimes(_msgSender());
+        
+        uint256 playerTicketId = ticketManager.getTicketId(_msgSender());
         Player memory newPlayer = Player({
-            ticketId: ticketManager.getTicketId(_msgSender()),
+            ticketId: playerTicketId,
             isOdd: _isOdd,
-            bet: _amount
+            bet: _amount,
+            isRewarded: false
         });
 
-        playerList[lastMatch].push(newPlayer);
+        playerList[lastMatch][playerTicketId] = newPlayer;
 
         emit Betted(_msgSender(), lastMatch, _amount);
     }
@@ -153,19 +160,11 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(isExpired != true, "This user's ticket is expired. Please buy a new one to play");
 
         // Checking whether user has already betted before
-        Player[] memory players = playerList[lastMatch];
-
-        for (uint256 i = 0; i < players.length; i++) {
-            require(players[i].ticketId != ticketId, 'This user has betted before!');
-        }
+        Player memory player = playerList[lastMatch][ticketId];
+        require(player.ticketId != ticketId, 'This user has betted before!');
 
         // Checking balance of user is enough to bet, and the balance of contract is enough to reward
         require(cash.balanceOf(_msgSender()) >= _amount, "User's balance is not enough to bet");
-
-        uint256 totalCashBetted = 0;
-        for (uint256 i = 0; i < players.length; i++) {
-            totalCashBetted = totalCashBetted + players[i].bet;
-        }
 
         uint256 totalCashReward = (totalCashBetted + _amount) * 2;
         require(
@@ -190,17 +189,32 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      *      Increase matchId by 1
      */
     function _endGame() private {
-        Player[] memory players = playerList[lastMatch];
         Match memory currentMatch = matchList[lastMatch];
         bool isOdd = (currentMatch.roll1 + currentMatch.roll2) % 2 == 1;
         matchList[lastMatch].isOdd = isOdd;
 
-        for (uint256 i = 0; i < players.length; i++) {
-            if (players[i].isOdd == isOdd) {
-                cash.transfer(ticketManager.ownerOf(players[i].ticketId), players[i].bet * 2);
-            }
-        }
-
+        totalCashBetted = 0;
         ++lastMatch;
+    }
+
+    /**
+     * @dev Withdraw refund for user
+     *      Prevent DoS Block Gas Limit
+     * @param _matchId Id of the match that user wants to withdraw
+     * emit {WithDrawnRefund} events
+     */
+    function withdrawRefund(uint256 _matchId) external nonReentrant {
+        uint256 playerTicketId = ticketManager.getTicketId(_msgSender());
+        Player memory player = playerList[_matchId][playerTicketId];
+        Match memory targetMatch = matchList[_matchId];
+
+        require(!player.isRewarded, 'Player has been withdrawn this game!');
+        playerList[_matchId][playerTicketId].isRewarded = true;
+
+        require(player.isOdd == targetMatch.isOdd, 'Player does not win this game!');
+        bool success = cash.transfer(_msgSender(), player.bet * 2);
+
+        require(success, 'Refund cash is not successful');
+        emit WithDrawnRefund(_msgSender(), _matchId, player.bet * 2);
     }
 }

@@ -54,7 +54,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser = await cash.balanceOf(user1.address);
 
         const userTicket = await ticketManager.ticketOf(user1.address);
-        let player = await evenOdd.playerList(lastMatch, 0);
+        let player = await evenOdd.playerList(lastMatch, userTicket.ticketId);
 
         expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(userTicket.ticketId);
         expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -68,16 +68,14 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser = balanceOfUser.add(20);
         }
 
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
-
         // Game 2
         lastMatch = await evenOdd.lastMatch();
         await expect(
             evenOdd.connect(user1).bet(false, 10),
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
-        balanceOfUser = await cash.balanceOf(user1.address);
-        player = await evenOdd.playerList(lastMatch, 0);
+        balanceOfUser = balanceOfUser.sub(10);
+        player = await evenOdd.playerList(lastMatch, userTicket.ticketId);
 
         expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(userTicket.ticketId);
         expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -91,16 +89,14 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser = balanceOfUser.add(20);
         }
 
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
-
         // Game 3
         lastMatch = await evenOdd.lastMatch();
         await expect(
             evenOdd.connect(user1).bet(true, 10),
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
-        balanceOfUser = await cash.balanceOf(user1.address);
-        player = await evenOdd.playerList(lastMatch, 0);
+        balanceOfUser = balanceOfUser.sub(10);
+        player = await evenOdd.playerList(lastMatch, userTicket.ticketId);
 
         expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(userTicket.ticketId);
         expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -114,8 +110,6 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser = balanceOfUser.add(20);
         }
 
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
-
         expect(await ticketManager.isExpired(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
             value: 6,
@@ -128,8 +122,8 @@ describe('[Integration Test] Testing flow of the game', () => {
             evenOdd.connect(user1).bet(false, 10),
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
-        balanceOfUser = await cash.balanceOf(user1.address);
-        player = await evenOdd.playerList(lastMatch, 0);
+        balanceOfUser = balanceOfUser.sub(10);
+        player = await evenOdd.playerList(lastMatch, userTicket.ticketId);
 
         expect(player.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(userTicket.ticketId);
         expect(player.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -141,6 +135,19 @@ describe('[Integration Test] Testing flow of the game', () => {
         isOdd = currentMatch.isOdd;
         if (!isOdd) {
             balanceOfUser = balanceOfUser.add(20);
+        }
+
+        if ((await evenOdd.matchList(0)).isOdd) {
+            await evenOdd.connect(user1).withdrawRefund(0);
+        }
+        if (!(await evenOdd.matchList(1)).isOdd) {
+            await evenOdd.connect(user1).withdrawRefund(1);
+        }
+        if ((await evenOdd.matchList(2)).isOdd) {
+            await evenOdd.connect(user1).withdrawRefund(2);
+        }
+        if (!(await evenOdd.matchList(3)).isOdd) {
+            await evenOdd.connect(user1).withdrawRefund(3);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
@@ -184,7 +191,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser1 = await cash.balanceOf(user1.address);
 
         const user1Ticket = await ticketManager.ticketOf(user1.address);
-        let player1 = await evenOdd.playerList(lastMatch, 0);
+        let player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -199,7 +206,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser2 = await cash.balanceOf(user2.address);
 
         const user2Ticket = await ticketManager.ticketOf(user2.address);
-        let player2 = await evenOdd.playerList(lastMatch, 1);
+        let player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -214,7 +221,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser3 = await cash.balanceOf(user3.address);
 
         const user3Ticket = await ticketManager.ticketOf(user3.address);
-        let player3 = await evenOdd.playerList(lastMatch, 2);
+        let player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -227,13 +234,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
-        expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // Game 2
         lastMatch = await evenOdd.lastMatch();
@@ -243,9 +249,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -257,9 +263,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -271,9 +277,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user3.address], [10, -10]);
 
-        balanceOfUser3 = await cash.balanceOf(user3.address);
+        balanceOfUser3 = balanceOfUser3.sub(10);
 
-        player3 = await evenOdd.playerList(lastMatch, 2);
+        player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -284,15 +290,14 @@ describe('[Integration Test] Testing flow of the game', () => {
         currentMatch = await evenOdd.matchList(lastMatch);
         isOdd = currentMatch.isOdd;
         if (isOdd) {
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
             balanceOfUser3 = balanceOfUser3.add(20);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
-        expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         expect(await ticketManager.isExpired(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
@@ -308,9 +313,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -322,9 +327,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -336,9 +341,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user3.address], [10, -10]);
 
-        balanceOfUser3 = await cash.balanceOf(user3.address);
+        balanceOfUser3 = balanceOfUser3.sub(10);
 
-        player3 = await evenOdd.playerList(lastMatch, 2);
+        player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -352,6 +357,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser3 = balanceOfUser3.add(20);
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
@@ -392,7 +400,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser1 = await cash.balanceOf(user1.address);
 
         const user1Ticket = await ticketManager.ticketOf(user1.address);
-        let player1 = await evenOdd.playerList(lastMatch, 0);
+        let player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -407,7 +415,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser2 = await cash.balanceOf(user2.address);
 
         const user2Ticket = await ticketManager.ticketOf(user2.address);
-        let player2 = await evenOdd.playerList(lastMatch, 1);
+        let player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -422,7 +430,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser3 = await cash.balanceOf(user3.address);
 
         const user3Ticket = await ticketManager.ticketOf(user3.address);
-        let player3 = await evenOdd.playerList(lastMatch, 2);
+        let player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -435,13 +443,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
-        expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // Game 2
         lastMatch = await evenOdd.lastMatch();
@@ -451,9 +458,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -465,9 +472,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -480,10 +487,9 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (!isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
 
         // User1's ticket is expired
         expect(await ticketManager.isExpired(user1.address)).to.be.true;
@@ -500,9 +506,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -514,9 +520,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -528,9 +534,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user3.address], [10, -10]);
 
-        balanceOfUser3 = await cash.balanceOf(user3.address);
+        balanceOfUser3 = balanceOfUser3.sub(10);
 
-        player3 = await evenOdd.playerList(lastMatch, 2);
+        player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -542,14 +548,13 @@ describe('[Integration Test] Testing flow of the game', () => {
         isOdd = currentMatch.isOdd;
         if (isOdd) {
             balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
-        expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // Ticket of user2 is expired
         expect(await ticketManager.isExpired(user2.address)).to.be.true;
@@ -566,9 +571,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -580,9 +585,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -594,9 +599,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user3.address], [10, -10]);
 
-        balanceOfUser3 = await cash.balanceOf(user3.address);
+        balanceOfUser3 = balanceOfUser3.sub(10);
 
-        player3 = await evenOdd.playerList(lastMatch, 2);
+        player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -607,9 +612,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         currentMatch = await evenOdd.matchList(lastMatch);
         isOdd = currentMatch.isOdd;
         if (isOdd) {
-            balanceOfUser3 = balanceOfUser3.add(20);
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
@@ -672,7 +680,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser1 = await cash.balanceOf(user1.address);
 
         const user1Ticket = await ticketManager.ticketOf(user1.address);
-        let player1 = await evenOdd.playerList(lastMatch, 0);
+        let player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -687,7 +695,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser2 = await cash.balanceOf(user2.address);
 
         const user2Ticket = await ticketManager.ticketOf(user2.address);
-        let player2 = await evenOdd.playerList(lastMatch, 1);
+        let player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -702,7 +710,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         let balanceOfUser3 = await cash.balanceOf(user3.address);
 
         const user3Ticket = await ticketManager.ticketOf(user3.address);
-        let player3 = await evenOdd.playerList(lastMatch, 2);
+        let player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -715,13 +723,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
-
-        expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
-        expect(await cash.balanceOf(user2.address)).equal(balanceOfUser2);
-        expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // User1's ticket is expired'
         expect(await ticketManager.isExpired(user1.address)).to.be.true;
@@ -737,6 +744,7 @@ describe('[Integration Test] Testing flow of the game', () => {
                 [`-${balanceOfUser3}`, balanceOfUser3]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
+            balanceOfUser3 = ethers.BigNumber.from('0');
         }
 
         // Game 2
@@ -747,9 +755,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user1.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
+        balanceOfUser1 = balanceOfUser1.sub(10);
 
-        player1 = await evenOdd.playerList(lastMatch, 0);
+        player1 = await evenOdd.playerList(lastMatch, user1Ticket.ticketId);
 
         expect(player1.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user1Ticket.ticketId);
         expect(player1.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -761,9 +769,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user2.address], [10, -10]);
 
-        balanceOfUser2 = await cash.balanceOf(user2.address);
+        balanceOfUser2 = balanceOfUser2.sub(10);
 
-        player2 = await evenOdd.playerList(lastMatch, 1);
+        player2 = await evenOdd.playerList(lastMatch, user2Ticket.ticketId);
 
         expect(player2.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user2Ticket.ticketId);
         expect(player2.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(false);
@@ -776,6 +784,8 @@ describe('[Integration Test] Testing flow of the game', () => {
             [user1.address, user3.address],
             [-10, 10]
         );
+        balanceOfUser1 = balanceOfUser1.sub(10);
+        balanceOfUser3 = balanceOfUser3.add(10);
 
         // -- User3
         await expect(
@@ -783,10 +793,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             'Balance of contract must be added 10 tokens and user subtract 10 tokens after user bet'
         ).to.changeTokenBalances(cash, [evenOdd.address, user3.address], [10, -10]);
 
-        balanceOfUser1 = await cash.balanceOf(user1.address);
-        balanceOfUser3 = await cash.balanceOf(user3.address);
+        balanceOfUser3 = balanceOfUser3.sub(10);
 
-        player3 = await evenOdd.playerList(lastMatch, 2);
+        player3 = await evenOdd.playerList(lastMatch, user3Ticket.ticketId);
 
         expect(player3.ticketId, 'Player ticket id must be equal to user ticket id').to.equal(user3Ticket.ticketId);
         expect(player3.isOdd, 'Value in match history must be the same as value the user has betted').to.equal(true);
@@ -798,9 +807,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         isOdd = currentMatch.isOdd;
         if (isOdd) {
             balanceOfUser3 = balanceOfUser3.add(20);
+            await evenOdd.connect(user3).withdrawRefund(lastMatch);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
+            await evenOdd.connect(user1).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdrawRefund(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
