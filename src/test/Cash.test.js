@@ -95,7 +95,7 @@ describe('Testing CashManager contract', () => {
                 .to.emit(cashManager, 'Bought')
                 .withArgs(user.address, ethers.utils.parseEther('1'));
 
-            await expect(cashManager.connect(user).withdraw(0)).to.be.revertedWith('Amount is must be greater than 0!');
+            await expect(cashManager.connect(user).withdraw(0)).to.be.revertedWith('Value must be greater than 0!');
         });
 
         it('[OK]: User withdraw successfully', async () => {
@@ -123,7 +123,7 @@ describe('Testing CashManager contract', () => {
     describe('Testing setRateConversion function', () => {
         it('[Fail]: rateConversion is not greater than 0', async () => {
             await expect(cashManager.connect(owner).setRateConversion(0)).to.be.revertedWith(
-                'Rate must be greater than zero'
+                'Value must be greater than 0!'
             );
         });
 

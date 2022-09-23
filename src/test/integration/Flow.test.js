@@ -110,11 +110,11 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser = balanceOfUser.add(20);
         }
 
-        expect(await ticketManager.isExpired(user1.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user1.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
 
         // Game 4
         lastMatch = await evenOdd.lastMatch();
@@ -138,16 +138,16 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         if ((await evenOdd.matchList(0)).isOdd) {
-            await evenOdd.connect(user1).withdrawRefund(0);
+            await evenOdd.connect(user1).withdraw(0);
         }
         if (!(await evenOdd.matchList(1)).isOdd) {
-            await evenOdd.connect(user1).withdrawRefund(1);
+            await evenOdd.connect(user1).withdraw(1);
         }
         if ((await evenOdd.matchList(2)).isOdd) {
-            await evenOdd.connect(user1).withdrawRefund(2);
+            await evenOdd.connect(user1).withdraw(2);
         }
         if (!(await evenOdd.matchList(3)).isOdd) {
-            await evenOdd.connect(user1).withdrawRefund(3);
+            await evenOdd.connect(user1).withdraw(3);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
@@ -234,11 +234,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         // Game 2
@@ -290,20 +290,20 @@ describe('[Integration Test] Testing flow of the game', () => {
         currentMatch = await evenOdd.matchList(lastMatch);
         isOdd = currentMatch.isOdd;
         if (isOdd) {
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
             balanceOfUser3 = balanceOfUser3.add(20);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
-        expect(await ticketManager.isExpired(user1.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user1.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
 
         // Game 3
         lastMatch = await evenOdd.lastMatch();
@@ -357,9 +357,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser3 = balanceOfUser3.add(20);
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
@@ -368,16 +368,16 @@ describe('[Integration Test] Testing flow of the game', () => {
     });
 
     it("User2, User3 ticket is expired -> Extends ticket -> Play 1 game with 3 users -> Play 1 game with user1, user2 -> User1's ticket is expired -> Extends ticket -> Play 1 game with 3 users -> ticket of user 2 is expired -> extend ticket -> play 1 game 3 users -> withdraw all token", async () => {
-        expect(await ticketManager.isExpired(user2.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.true;
         await ticketManager.connect(user2).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user2.address)).to.be.false;
-        expect(await ticketManager.isExpired(user3.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.true;
         await ticketManager.connect(user3).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user3.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.false;
 
         await cashManager.connect(user1).buy({
             value: ethers.utils.parseEther('1'),
@@ -443,11 +443,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         // Game 2
@@ -487,16 +487,16 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (!isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         // User1's ticket is expired
-        expect(await ticketManager.isExpired(user1.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user1.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
 
         // Game 3
         lastMatch = await evenOdd.lastMatch();
@@ -548,20 +548,20 @@ describe('[Integration Test] Testing flow of the game', () => {
         isOdd = currentMatch.isOdd;
         if (isOdd) {
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         // Ticket of user2 is expired
-        expect(await ticketManager.isExpired(user2.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.true;
         await ticketManager.connect(user2).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user2.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.false;
 
         // Game 4
         lastMatch = await evenOdd.lastMatch();
@@ -615,9 +615,9 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);
@@ -651,11 +651,11 @@ describe('[Integration Test] Testing flow of the game', () => {
     });
 
     it('Ticket of user3 is expired -> Extends ticket -> Play 1 game with 3 users -> Ticket of user1 is expired -> Extends ticket -> User3 withdraw all token -> Play 1 game with 3 users (user3 does not have enough token to bet) -> User1 transfer to User3 -> Play 1 game with 3 users -> withdraw) ', async () => {
-        expect(await ticketManager.isExpired(user3.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.true;
         await ticketManager.connect(user3).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user3.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.false;
 
         await cashManager.connect(user1).buy({
             value: ethers.utils.parseEther('1'),
@@ -723,19 +723,19 @@ describe('[Integration Test] Testing flow of the game', () => {
         if (isOdd) {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         } else {
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         // User1's ticket is expired'
-        expect(await ticketManager.isExpired(user1.address)).to.be.true;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
             value: 6,
         });
-        expect(await ticketManager.isExpired(user1.address)).to.be.false;
+        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
 
         // User3 withdraw all tokens
         if (balanceOfUser3 > 0) {
@@ -807,12 +807,12 @@ describe('[Integration Test] Testing flow of the game', () => {
         isOdd = currentMatch.isOdd;
         if (isOdd) {
             balanceOfUser3 = balanceOfUser3.add(20);
-            await evenOdd.connect(user3).withdrawRefund(lastMatch);
+            await evenOdd.connect(user3).withdraw(lastMatch);
         } else {
             balanceOfUser1 = balanceOfUser1.add(20);
             balanceOfUser2 = balanceOfUser2.add(20);
-            await evenOdd.connect(user1).withdrawRefund(lastMatch);
-            await evenOdd.connect(user2).withdrawRefund(lastMatch);
+            await evenOdd.connect(user1).withdraw(lastMatch);
+            await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser1);

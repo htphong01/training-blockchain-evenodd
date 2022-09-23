@@ -47,6 +47,24 @@ describe('Test EvenOdd Contract', () => {
         });
     });
 
+    describe('Testing `receive` function', () => {
+        it('[Fail]: Send a transaction with 0 wei to evenOdd contract', async () => {
+            tx = {
+                to: evenOdd.address,
+                value: 0
+            };
+            await expect(user1.sendTransaction(tx)).to.be.revertedWith('Value must be more than zero!')
+        })
+
+        it('[OK]: Send a transaction with 2 eth to evenOdd contract', async () => {
+            tx = {
+                to: evenOdd.address,
+                value: ethers.utils.parseEther('2')
+            };
+            await expect(user1.sendTransaction(tx)).to.emit(evenOdd, 'Received').withArgs(user1.address, ethers.utils.parseEther('2'));
+        })
+    });
+
     describe('Testing `bet` function', () => {
         it('[Fail]: Can not bet because amount of cash not greater than 0', async () => {
             await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0'))).to.be.revertedWith(
@@ -71,7 +89,7 @@ describe('Test EvenOdd Contract', () => {
                 await ticketManager.subtractTimes(user1.address);
 
                 await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseEther('0.1'))).to.be.revertedWith(
-                    "This user's ticket is expired. Please buy a new one to play"
+                    'This ticket is out of times. Please buy some turns to play!'
                 );
             });
         });
@@ -207,7 +225,23 @@ describe('Test EvenOdd Contract', () => {
         });
     });
 
-    describe('Tesing `withdrawRefund` function', () => {
+    describe('Tesing `withdraw` function', () => {
+        it('[Fail] Player withdraw an invalid match', async () => {
+            await expect(evenOdd.connect(user1).withdraw(0)).to.be.revertedWith('Match is not valid!');
+        });
+
+        it('[Fail] Player withdraw after betting', async () => {
+            await ticketManager.connect(user1).buy(3, {
+                value: 6,
+            });
+            await cashManager.connect(user1).buy({
+                value: ethers.utils.parseEther('0.5'),
+            });
+            await evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.2'));
+
+            await expect(evenOdd.connect(user1).withdraw(0)).to.be.revertedWith('Match is not valid!');
+        })
+
         it('[Fail] Player withdraw 1 game more than 2 times', async () => {
             await ticketManager.connect(user1).buy(3, {
                 value: 6,
@@ -232,13 +266,13 @@ describe('Test EvenOdd Contract', () => {
             const isOdd = currentMatch.isOdd;
 
             if (isOdd) {
-                await evenOdd.connect(user1).withdrawRefund(lastMatch);
-                await expect(evenOdd.connect(user1).withdrawRefund(lastMatch)).to.be.revertedWith(
+                await evenOdd.connect(user1).withdraw(lastMatch);
+                await expect(evenOdd.connect(user1).withdraw(lastMatch)).to.be.revertedWith(
                     'Player has been withdrawn this game!'
                 );
             } else {
-                await evenOdd.connect(user2).withdrawRefund(lastMatch);
-                await expect(evenOdd.connect(user1).withdrawRefund(lastMatch)).to.be.revertedWith(
+                await evenOdd.connect(user2).withdraw(lastMatch);
+                await expect(evenOdd.connect(user1).withdraw(lastMatch)).to.be.revertedWith(
                     'Player does not win this game!'
                 );
             }
@@ -269,11 +303,11 @@ describe('Test EvenOdd Contract', () => {
                 const isOdd = currentMatch.isOdd;
 
                 if (isOdd) {
-                    await expect(evenOdd.connect(user2).withdrawRefund(lastMatch)).to.be.revertedWith(
+                    await expect(evenOdd.connect(user2).withdraw(lastMatch)).to.be.revertedWith(
                         'Player does not win this game!'
                     );
                 } else {
-                    await expect(evenOdd.connect(user1).withdrawRefund(lastMatch)).to.be.revertedWith(
+                    await expect(evenOdd.connect(user1).withdraw(lastMatch)).to.be.revertedWith(
                         'Player does not win this game!'
                     );
                 }
@@ -307,13 +341,13 @@ describe('Test EvenOdd Contract', () => {
 
             if (isOdd) {
                 balanceOfUser1 = balanceOfUser1.add(ethers.utils.parseEther('0.4'));
-                await expect(evenOdd.connect(user1).withdrawRefund(lastMatch))
-                    .to.emit(evenOdd, 'WithDrawnRefund')
+                await expect(evenOdd.connect(user1).withdraw(lastMatch))
+                    .to.emit(evenOdd, 'WithDrawn')
                     .withArgs(user1.address, lastMatch, ethers.utils.parseEther('0.4'));
             } else {
                 balanceOfUser2 = balanceOfUser2.add(ethers.utils.parseEther('0.4'));
-                await expect(evenOdd.connect(user2).withdrawRefund(lastMatch))
-                    .to.emit(evenOdd, 'WithDrawnRefund')
+                await expect(evenOdd.connect(user2).withdraw(lastMatch))
+                    .to.emit(evenOdd, 'WithDrawn')
                     .withArgs(user2.address, lastMatch, ethers.utils.parseEther('0.4'));
             }
 
