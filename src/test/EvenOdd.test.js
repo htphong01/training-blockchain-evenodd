@@ -51,18 +51,20 @@ describe('Test EvenOdd Contract', () => {
         it('[Fail]: Send a transaction with 0 wei to evenOdd contract', async () => {
             tx = {
                 to: evenOdd.address,
-                value: 0
+                value: 0,
             };
-            await expect(user1.sendTransaction(tx)).to.be.revertedWith('Value must be more than zero!')
-        })
+            await expect(user1.sendTransaction(tx)).to.be.revertedWith('Value must be more than zero!');
+        });
 
         it('[OK]: Send a transaction with 2 eth to evenOdd contract', async () => {
             tx = {
                 to: evenOdd.address,
-                value: ethers.utils.parseEther('2')
+                value: ethers.utils.parseEther('2'),
             };
-            await expect(user1.sendTransaction(tx)).to.emit(evenOdd, 'Received').withArgs(user1.address, ethers.utils.parseEther('2'));
-        })
+            await expect(user1.sendTransaction(tx))
+                .to.emit(evenOdd, 'Received')
+                .withArgs(user1.address, ethers.utils.parseEther('2'));
+        });
     });
 
     describe('Testing `bet` function', () => {
@@ -240,7 +242,7 @@ describe('Test EvenOdd Contract', () => {
             await evenOdd.connect(user1).bet(false, ethers.utils.parseEther('0.2'));
 
             await expect(evenOdd.connect(user1).withdraw(0)).to.be.revertedWith('Match is not valid!');
-        })
+        });
 
         it('[Fail] Player withdraw 1 game more than 2 times', async () => {
             await ticketManager.connect(user1).buy(3, {
