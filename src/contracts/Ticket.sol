@@ -33,7 +33,7 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
      */ 
     function mint(address _to, uint256 _tokenId) external onlyOwner {
         require(_to != address(0), 'Address is not valid!');
-        require(_tokenId > 0, 'TokenId is must be greater than 0!');
+        require(_tokenId > 0, 'TokenId is not valid!');
         _mint(_to, _tokenId);
 
         emit Minted(_to, _tokenId);

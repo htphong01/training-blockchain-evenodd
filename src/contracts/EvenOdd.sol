@@ -72,7 +72,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         __ReentrancyGuard_init();
         require(
             ERC165CheckerUpgradeable.supportsInterface(address(_cashAddress), type(ICash).interfaceId),
-            'Invalid Cash Manager contract'
+            'Invalid Cash contract'
         );
         require(
             ERC165CheckerUpgradeable.supportsInterface(address(_cashManagerAddress), type(ICashManager).interfaceId),
@@ -100,12 +100,14 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     /**
      * @dev Supply token to contract
+     * @param _amount - Number of cashes that owner want to supply
      * Emit {SuppliedToken} events
      */
-    function supplyToken() external payable onlyOwner greaterThanZero(msg.value) {
-        cashManager.buy{value: msg.value}();
+    function supplyToken(uint256 _amount) external payable onlyOwner greaterThanZero(msg.value) {
+        require(_amount * cashManager.pricePerCash() / (10**cash.getDecimals()) == msg.value, 'You must pay enough fee!');
+        cashManager.buy{value: msg.value}(_amount);
 
-        emit SuppliedToken(_msgSender(), msg.value);
+        emit SuppliedToken(_msgSender(), _amount);
     }
 
     /**
@@ -120,7 +122,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(ticketId != 0, 'This user does not have ticket. Please buy a one to play');
 
         bool isOutOfTimes = ticketManager.isOutOfTimes(_msgSender());
-        require(isOutOfTimes != true, "This ticket is out of times. Please buy some turns to play!");
+        require(isOutOfTimes != true, "This ticket is out of times!");
 
         // Checking whether user has already betted before
         Player memory player = playerList[lastMatch][ticketId];
@@ -137,7 +139,6 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         );
 
         require(cash.transferFrom(_msgSender(), address(this), _amount), 'Transfer betted cash is not successful!');
-        require(totalCashBetted + _amount > totalCashBetted, 'Overflow betted cash!');
         totalCashBetted += _amount;
         ticketManager.subtractTimes(_msgSender());
         

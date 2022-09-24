@@ -8,6 +8,7 @@ import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
 import '@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
+import 'hardhat/console.sol';
 
 contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUpgradeable, ICashManager {
     /**
@@ -19,18 +20,18 @@ contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUp
     /**
      * @dev The rate when exchange between wei and cash
      */
-    uint256 public rateConversion; // default:  1 wei -> 1 cash
+    uint256 public pricePerCash; // default:  1 wei -> 1 cash
 
     event Bought(address indexed _account, uint256 _amount);
     event Withdrawn(address indexed _account, uint256 _amount);
-    event SetRateConversion(uint256 indexed _rate);
+    event SetPricePerCash(uint256 indexed _rate);
 
     /**
-     * @dev Modifier to check that the value is greater than zero 
+     * @dev Modifier to check that the value is valid (use for ERC20)
      * @param _value Value to check
      */
-    modifier greaterThanZero(uint256 _value) {
-        require(_value > 0, 'Value must be greater than 0!');
+    modifier validAmountCash(uint256 _value) {
+        require(_value * (10 ** cash.getDecimals()) >= 1 , 'Invalid amount!');
         _;
     }
 
@@ -48,7 +49,7 @@ contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUp
             'Invalid Cash contract'
         );
         cash = _cashAddress;
-        rateConversion = 1;
+        pricePerCash = 1;
     }
 
     /**
@@ -66,13 +67,14 @@ contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUp
 
     /**
      * @dev Buy cashes (ERC20) to play game. 1 wei = 1 cash
+     * @param _amount - Number of cashes that user wants to buy
      * Emit {Bought} events
      */
-    function buy() external payable greaterThanZero(msg.value) {
-        uint256 amount = msg.value / rateConversion;
-        cash.mint(_msgSender(), amount);
+    function buy(uint256 _amount) external payable validAmountCash(_amount) {
+        require(msg.value * 10**cash.getDecimals() / pricePerCash  == _amount, 'You must pay enough fee!');
+        cash.mint(_msgSender(), _amount);
         
-        emit Bought(_msgSender(), amount);
+        emit Bought(_msgSender(), _amount / 10**cash.getDecimals());
     }
 
     /**
@@ -80,20 +82,22 @@ contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUp
      * @param _amount - Number of cashes that user wants to withdraw
      * emit {Withdrawn} events
      */
-    function withdraw(uint256 _amount) external nonReentrant greaterThanZero(_amount) {
+    function withdraw(uint256 _amount) external nonReentrant validAmountCash(_amount) {
         cash.burn(_msgSender(), _amount);
-        AddressUpgradeable.sendValue(payable(_msgSender()), _amount * rateConversion);
+        uint256 refund = _amount * pricePerCash / (10**cash.getDecimals());
+        AddressUpgradeable.sendValue(payable(_msgSender()), refund);
 
-        emit Withdrawn(_msgSender(), _amount);
+        emit Withdrawn(_msgSender(), refund);
     }
 
     /**
-     * @dev Set rate of conversion between eth and cash
-     * @param _rate The rate of conversion
-     * Emit {SetRateConversion} events
+     * @dev Set price per cash
+     * @param _newPrice new price per cash
+     * emit {SetPricePerCash} events
      */
-    function setRateConversion(uint256 _rate) external onlyOwner greaterThanZero(_rate) {
-        rateConversion = _rate;
-        emit SetRateConversion(_rate);
+    function setPricePerCash(uint256 _newPrice) external onlyOwner {
+        require(_newPrice > 0, 'New price must be greater than 0!');
+        pricePerCash = _newPrice;
+        emit SetPricePerCash(_newPrice);
     }
 }

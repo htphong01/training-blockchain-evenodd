@@ -21,11 +21,11 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
     }
 
     /**
-     * @dev Modifier to check that the value is greater than zero 
+     * @dev Modifier to check that the value is greater than 10 ** decimals 
      * @param _value Value to check
      */
-    modifier greaterThanZero(uint256 _value) {
-        require(_value > 0, 'Value must be greater than 0!');
+    modifier validAmount(uint256 _value) {
+        require(_value / (10 ** decimals()) >= 1 , 'Invalid amount!');
         _;
     }
 
@@ -46,11 +46,18 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
     }
 
     /**
+     * @dev Override function `decimals` to return new decimals
+     */
+    function decimals() public view virtual override returns (uint8) {
+        return 3;
+    }
+
+    /**
      * @dev Used to mint ERC20 token for user
      * @param _account Address of user's account
      * @param _amount Amount of token that user will receive
      */
-    function mint(address _account, uint256 _amount) external onlyOwner notZeroAddress(_account) greaterThanZero(_amount) {
+    function mint(address _account, uint256 _amount) external onlyOwner notZeroAddress(_account) validAmount(_amount) {
         _mint(_account, _amount);
 
         emit Minted(_account, _amount);
@@ -61,9 +68,17 @@ contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash 
      * @param _account Address of user's account
      * @param _amount Amount of token that user will withdraw
      */
-    function burn(address _account, uint256 _amount) external onlyOwner notZeroAddress(_account) greaterThanZero(_amount) {
+    function burn(address _account, uint256 _amount) external onlyOwner notZeroAddress(_account) validAmount(_amount) {
         _burn(_account, _amount);
 
         emit Burned(_account, _amount);
+    }
+
+    /**
+     * @dev Used to get decimals of ERC20
+     * @return decimals
+     */
+    function getDecimals() external view returns(uint8) {
+        return decimals();
     }
 }

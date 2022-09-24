@@ -124,11 +124,6 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      */
     function extendTicket(uint256 _times) external payable costs(pricePerTime * _times) notBoughtTicket(_msgSender()) {
         require(_times > 0, 'The times must be greater than 0!');
-        UserTicket memory userTicket = ticketOf[_msgSender()];
-
-        require(userTicket.ticketId != 0, 'This user has not bought ticket!');
-
-
         ticketOf[_msgSender()].times += _times;
 
         emit ExtendedTicket(_msgSender(), ticketOf[_msgSender()].times);
