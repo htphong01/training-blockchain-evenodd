@@ -8,7 +8,6 @@ import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
 import '@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ICashManager.sol';
-import 'hardhat/console.sol';
 
 contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUpgradeable, ICashManager {
     /**
@@ -28,7 +27,7 @@ contract CashManager is ERC165Upgradeable, ReentrancyGuardUpgradeable, OwnableUp
 
     /**
      * @dev Modifier to check that the value is valid (use for ERC20)
-     * @param _value Value to check
+     * @param _value Value to check
      */
     modifier validAmountCash(uint256 _value) {
         require(_value * (10 ** cash.getDecimals()) >= 1 , 'Invalid amount!');
