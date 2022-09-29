@@ -6,7 +6,7 @@ import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import './interfaces/ITicket.sol';
 
-contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITicket {
+contract Ticket is OwnableUpgradeable, ERC721Upgradeable, ITicket {
 
     event Minted(address _account, uint256 _tokenId);
 
@@ -22,7 +22,7 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
     /**
      * @dev Override function `supportsInterface` when using ERC165
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
         return interfaceId == type(ITicket).interfaceId || super.supportsInterface(interfaceId);
     }
 
@@ -32,9 +32,7 @@ contract Ticket is ERC165Upgradeable, ERC721Upgradeable, OwnableUpgradeable, ITi
      * @param _tokenId Ticket's id of user
      */ 
     function mint(address _to, uint256 _tokenId) external onlyOwner {
-        require(_to != address(0), 'Address is not valid!');
-        require(_tokenId > 0, 'TokenId is not valid!');
-        _mint(_to, _tokenId);
+        _safeMint(_to, _tokenId);
 
         emit Minted(_to, _tokenId);
     }

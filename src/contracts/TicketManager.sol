@@ -5,22 +5,24 @@ import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol';
 import './interfaces/ITicket.sol';
+import './interfaces/ICash.sol';
 import './interfaces/ITicketManager.sol';
 
-contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager {
-    struct UserTicket {
-        uint256 ticketId;
-        uint256 times;
-    }
-
+contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager {
     /**
      * @dev Ticket contract interface
      *      Used this contract to mint ERC721
      */
     ITicket public ticket;
 
+    /**
+     * @dev Cash contract interface
+     *      Using this contract to mint and burn ERC20 token
+     */
+    ICash public cash;
+
     uint256 public lastTicket;
-    uint256 public pricePerTime; // default: 2 wei
+    uint256 public pricePerTime; // default: 10 ** decimals() / 2
 
     /**
      * @dev Save list user's tickets
@@ -34,10 +36,11 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
 
     /**
      * @dev Modifier used to check the msg.value
-     * @param _price The value want to check
+     * @param _times The times want to buy or extend
      */
-    modifier costs(uint256 _price) {
-        require(msg.value == _price, 'User must pay enough fee!');
+    modifier validTimesAndCosts(uint256 _times) {
+        require(_times > 0, 'Invalid times!');
+        require(msg.value == pricePerTime * _times, 'Invalid fee!');
         _;
     }
 
@@ -45,18 +48,10 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Modifier used to check the user has bought the ticket
      * @param _account The address want to check
      */
-    modifier notBoughtTicket(address _account) {
+    modifier validTicket(address _account) {
+        require(_account != address(0), 'Invalid address!');
         UserTicket memory userTicket = ticketOf[_account];
-        require(userTicket.ticketId != 0, 'This user has not bought ticket!');
-        _;
-    }
-
-    /**
-     * @dev Modifier to check that the account's address is Zero address
-     * @param _account Address of account to check
-     */
-    modifier notZeroAddress(address _account) {
-        require(_account != address(0), 'Address is not valid!');
+        require(userTicket.ticketId != 0, 'Invalid ticket!');
         _;
     }
 
@@ -64,7 +59,7 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Replace for constructor function in order to be upgradeable
      * @param _ticketAddress Address of contract Ticket
      */
-    function initialize(ITicket _ticketAddress) public initializer {
+    function initialize(ITicket _ticketAddress, ICash _cashAddress) public initializer {
         __Ownable_init();
         __ERC165_init();
 
@@ -72,8 +67,15 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
             ERC165CheckerUpgradeable.supportsInterface(address(_ticketAddress), type(ITicket).interfaceId),
             'Invalid Ticket contract'
         );
-        ticket = ITicket(_ticketAddress);
-        pricePerTime = 2;
+
+        require(
+            ERC165CheckerUpgradeable.supportsInterface(address(_cashAddress), type(ICash).interfaceId),
+            'Invalid Cash contract'
+        );
+
+        ticket = _ticketAddress;
+        cash = _cashAddress;
+        pricePerTime = 10 ** cash.getDecimals() / 2;
     }
 
     /**
@@ -93,14 +95,13 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @dev Buy a ticket to play game. 0.1 eth -> 1 ticket
      * Emit {Bought} events
      */
-    function buy(uint256 _times) external payable costs(pricePerTime * _times) {
-        require(_times > 0, 'The times must be greater than 0!');
-        require(ticketOf[_msgSender()].ticketId == 0, 'This user has already bought ticket!');
+    function buy(uint256 _times) external payable validTimesAndCosts(_times) {
+        require(ticketOf[_msgSender()].ticketId == 0, 'Already bought ticket!');
 
         ticket.mint(_msgSender(), ++lastTicket);
 
-        ticketOf[_msgSender()].ticketId = lastTicket;
-        ticketOf[_msgSender()].times = _times;
+        UserTicket memory newUserTicket = UserTicket(lastTicket, _times);
+        ticketOf[_msgSender()] = newUserTicket;
 
         emit Bought(_msgSender(), _times, lastTicket);
     }
@@ -110,8 +111,8 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
      * @param _account Address of user whom we subtract times ticket of
      * Emit {SubtractedTimes} events
      */
-    function subtractTimes(address _account) external notZeroAddress(_account) notBoughtTicket(_account) {
-        require(ticketOf[_account].times > 0, 'This ticket is out of times!');
+    function subtractTimes(address _account) external onlyOwner validTicket(_account) {
+        require(ticketOf[_account].times > 0, 'Ticket is out of times!');
 
         ticketOf[_account].times -= 1;
 
@@ -120,31 +121,22 @@ contract TicketManager is ERC165Upgradeable, OwnableUpgradeable, ITicketManager 
 
     /**
      * @dev Extend ticket when it was expired
+     * @param _times The time that user want to extend
      * Emit {ExtendedTicket} events
      */
-    function extendTicket(uint256 _times) external payable costs(pricePerTime * _times) notBoughtTicket(_msgSender()) {
-        require(_times > 0, 'The times must be greater than 0!');
+    function extendTicket(uint256 _times) external payable validTimesAndCosts(_times) validTicket(_msgSender()) {
         ticketOf[_msgSender()].times += _times;
 
-        emit ExtendedTicket(_msgSender(), ticketOf[_msgSender()].times);
+        emit ExtendedTicket(_msgSender(), _times);
     }
 
     /**
-     * @dev Check if a ticket's times is equal to 0!
+     * @dev Get information of user ticket!
      * @param _account The address of user's ticket
-     * @return The ticket's times is equal to 0 or not
+     * @return The ticket of user
      */
-    function isOutOfTimes(address _account) external view returns (bool) {
-        return ticketOf[_account].times == 0;
-    }
-
-    /**
-     * @dev Get ticket Id of a ticket
-     * @param _account Address of user's ticketOf
-     * @return ticketId The id of the ticket
-     */
-    function getTicketId(address _account) external view returns (uint256) {
-        return ticketOf[_account].ticketId;
+    function getTicketOf(address _account) external view returns (UserTicket memory) {
+        return ticketOf[_account];
     }
 
     /**

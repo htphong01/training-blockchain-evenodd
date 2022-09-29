@@ -10,6 +10,10 @@ import './interfaces/ICashManager.sol';
 import './interfaces/ITicketManager.sol';
 
 contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+
+    /**
+     * @dev struct for storing player's information in game
+     */
     struct Player {
         uint256 ticketId;
         bool isOdd;
@@ -17,6 +21,9 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bool isRewarded;
     }
 
+    /**
+     * @dev struct for storing information of a game
+     */
     struct Match {
         uint256 roll1;
         uint256 roll2;
@@ -47,13 +54,17 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     mapping(uint256 => Match) public matchList;
 
     event Received(address indexed _from, uint256 _amount);
-    event Betted(address indexed _account, uint256 indexed _gameId, uint256 _amount);
-    event Played(uint256 indexed _gameId, bool _isOdd);
+    event Betted(address indexed _account, uint256 indexed _gameId, bool indexed _isOdd, uint256 _amount);
+    event Played(uint256 indexed _matchId, bool _isOdd);
     event SuppliedToken(address indexed _from, uint256 _amount);
-    event WithDrawn(address indexed _to, uint256 indexed _matchId, uint256 _refund);
+    event WithDrawn(address indexed _to, uint256 indexed _matchId, uint256 _amount);
 
-    modifier greaterThanZero(uint256 _value) {
-        require(_value > 0, 'Value must be more than zero!');
+    /**
+     * @dev Modifier to check that the account's address is Zero address
+     * @param _value Amount to check
+     */
+    modifier validValue(uint256 _value) {
+        require(_value > 0, 'Invalid value!');
         _;
     }
 
@@ -94,20 +105,18 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     /**
      * @dev Test for cases that contract directly receive eth without data
      */
-    receive() external payable greaterThanZero(msg.value) {
+    receive() external payable validValue(msg.value) {
         emit Received(_msgSender(), msg.value);
     }
 
     /**
      * @dev Supply token to contract
-     * @param _amount - Number of cashes that owner want to supply
      * Emit {SuppliedToken} events
      */
-    function supplyToken(uint256 _amount) external payable onlyOwner greaterThanZero(msg.value) {
-        require(_amount * cashManager.pricePerCash() / (10**cash.getDecimals()) == msg.value, 'You must pay enough fee!');
-        cashManager.buy{value: msg.value}(_amount);
+    function supplyToken() external payable onlyOwner {
+        cashManager.buy{value: msg.value}();
 
-        emit SuppliedToken(_msgSender(), _amount);
+        emit SuppliedToken(_msgSender(), msg.value);
     }
 
     /**
@@ -116,29 +125,29 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * @param _amount The amount of token that user betteds
      * emit {Betted} events
      */
-    function bet(bool _isOdd, uint256 _amount) external nonReentrant greaterThanZero(_amount) {
+    function bet(bool _isOdd, uint256 _amount) external nonReentrant validValue(_amount) {
         // Checking whether user has already bought ticket
-        uint256 ticketId = ticketManager.getTicketId(_msgSender());
-        require(ticketId != 0, 'This user does not have ticket. Please buy a one to play');
+        UserTicket memory userTicket = ticketManager.getTicketOf(_msgSender());
+        uint256 ticketId = userTicket.ticketId;
+        require(ticketId != 0, 'Invalid ticket!');
 
-        bool isOutOfTimes = ticketManager.isOutOfTimes(_msgSender());
-        require(isOutOfTimes != true, "This ticket is out of times!");
+        require(userTicket.times != 0, "Ticket is out of times!");
 
         // Checking whether user has already betted before
         Player memory player = playerList[lastMatch][ticketId];
-        require(player.ticketId != ticketId, 'This user has betted before!');
+        require(player.ticketId != ticketId, 'Betted before!');
 
         // Checking balance of user is enough to bet, and the balance of contract is enough to reward
-        require(cash.balanceOf(_msgSender()) >= _amount, "User's balance is not enough to bet");
+        require(cash.balanceOf(_msgSender()) >= _amount, "Exceeds balance!");
 
-        require(totalCashBetted + _amount > totalCashBetted, 'Overflow betted cash!');
+        require(totalCashBetted + _amount > totalCashBetted, 'Overflow!');
         uint256 totalCashReward = (totalCashBetted + _amount) * 2;
         require(
             totalCashReward <= (cash.balanceOf(address(this)) + _amount),
-            'Contract is not enough cash to reward if user win'
+            'Not enough to reward!'
         );
 
-        require(cash.transferFrom(_msgSender(), address(this), _amount), 'Transfer betted cash is not successful!');
+        require(cash.transferFrom(_msgSender(), address(this), _amount), 'Transfer not successful!');
         totalCashBetted += _amount;
         ticketManager.subtractTimes(_msgSender());
         
@@ -150,7 +159,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         });
         playerList[lastMatch][ticketId] = newPlayer;
 
-        emit Betted(_msgSender(), lastMatch, _amount);
+        emit Betted(_msgSender(), lastMatch, _isOdd, _amount);
     }
 
     /**
@@ -162,16 +171,18 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) - block.number / 3;
         uint256 roll2 = (((block.timestamp / block.chainid + 5) % 23) + block.number * 2 + block.difficulty) / 4;
 
-        matchList[lastMatch].roll1 = uint256(roll1 % 6) + 1;
-        matchList[lastMatch].roll2 = uint256(roll2 % 6) + 1;
+        Match memory newMatch = Match({
+            roll1: uint256(roll1 % 6) + 1,
+            roll2: uint256(roll2 % 6) + 1,
+            isOdd: (roll1 + roll2) % 2 == 1
+        });
 
-        bool isOdd = (roll1 + roll2) % 2 == 1;
-        matchList[lastMatch].isOdd = isOdd;
+        matchList[lastMatch] = newMatch;
 
         totalCashBetted = 0;
         ++lastMatch;
         
-        emit Played(lastMatch - 1, isOdd);
+        emit Played(lastMatch - 1, newMatch.isOdd);
     }
 
     /**
@@ -181,18 +192,18 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * emit {WithDrawnRefund} events
      */
     function withdraw(uint256 _matchId) external nonReentrant {
-        require(_matchId < lastMatch, 'Match is not valid!');
-        uint256 playerTicketId = ticketManager.getTicketId(_msgSender());
+        require(_matchId < lastMatch, 'Invalid match!');
+        uint256 playerTicketId = ticketManager.getTicketOf(_msgSender()).ticketId;
         Player memory player = playerList[_matchId][playerTicketId];
 
-        require(!player.isRewarded, 'Player has been withdrawn this game!');
+        require(!player.isRewarded, 'Has been withdrawn this game!');
         playerList[_matchId][playerTicketId].isRewarded = true;
 
         Match memory targetMatch = matchList[_matchId];
-        require(player.isOdd == targetMatch.isOdd, 'Player does not win this game!');
+        require(player.isOdd == targetMatch.isOdd, 'Does not win this game!');
         bool success = cash.transfer(_msgSender(), player.bet * 2);
 
-        require(success, 'Withdraw cash is not successful');
+        require(success, 'Withdraw not successful');
         emit WithDrawn(_msgSender(), _matchId, player.bet * 2);
     }
 }

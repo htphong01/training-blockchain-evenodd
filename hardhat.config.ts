@@ -1,25 +1,28 @@
-require('@nomicfoundation/hardhat-toolbox');
-require('@nomicfoundation/hardhat-chai-matchers');
-require('@nomicfoundation/hardhat-network-helpers');
+import { HardhatUserConfig } from 'hardhat/config';
+import * as dotenv from 'dotenv';
+dotenv.config();
+import '@nomicfoundation/hardhat-toolbox';
+import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-network-helpers';
 
 /**
  * Used for Upgradable contracts
  * Ref: https://docs.openzeppelin.com/upgrades-plugins/1.x/
  */
 
-require('@openzeppelin/hardhat-upgrades');
+import '@openzeppelin/hardhat-upgrades';
 /**
  * verify smart contract
  */
-require('@nomiclabs/hardhat-etherscan');
+import '@nomiclabs/hardhat-etherscan';
 /**
  * Used for checking coverage of test case
  */
-require('solidity-coverage');
+import 'solidity-coverage';
 require('dotenv').config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+const config: HardhatUserConfig = {
     defaultNetwork: 'hardhat',
     networks: {
         hardhat: {
@@ -28,16 +31,16 @@ module.exports = {
         },
         ropsten: {
             url: process.env.ROPSTEN_URL,
-            accounts: [process.env.DEPLOY_ACCOUNT],
+            accounts: [process.env.DEPLOY_ACCOUNT!],
         },
         rinkeby: {
             url: process.env.RINKEBY_URL,
-            accounts: [process.env.DEPLOY_ACCOUNT],
+            accounts: [process.env.DEPLOY_ACCOUNT!],
         },
         bsc: {
             url: process.env.BSC_URL,
             chainId: 97,
-            accounts: [process.env.DEPLOY_ACCOUNT],
+            accounts: [process.env.DEPLOY_ACCOUNT!],
         },
     },
     etherscan: {
@@ -63,3 +66,4 @@ module.exports = {
         timeout: 40000,
     },
 };
+export default config;

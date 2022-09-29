@@ -1,53 +1,88 @@
-const { expect } = require('chai');
-const { ethers } = require('hardhat');
+import { expect } from 'chai';
+import { ethers, upgrades } from 'hardhat';
+import { BigNumber } from 'ethers';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import {
+    Cash__factory,
+    CashManager__factory,
+    Ticket__factory,
+    TicketManager__factory,
+    EvenOdd__factory,
+    Cash,
+    CashManager,
+    Ticket,
+    TicketManager,
+    EvenOdd,
+} from '../../typechain-types';
 
 describe('[Integration Test] Testing flow of the game', () => {
+    let owner: SignerWithAddress;
+    let user1: SignerWithAddress;
+    let user2: SignerWithAddress;
+    let user3: SignerWithAddress;
+
+    let CashFactory: Cash__factory;
+    let CashManagerFactory: CashManager__factory;
+    let TicketFactory: Ticket__factory;
+    let TicketManagerFactory: TicketManager__factory;
+    let EvenOddFactory: EvenOdd__factory;
+
+    let cash: Cash;
+    let cashManager: CashManager;
+    let ticket: Ticket;
+    let ticketManager: TicketManager;
+    let evenOdd: EvenOdd;
+
+    let decimals: number;
+    let pricePerTime: BigNumber;
+    let lastMatch: BigNumber;
+
     before(async () => {
-        Cash = await ethers.getContractFactory('Cash');
-        CashManager = await ethers.getContractFactory('CashManager');
-        Ticket = await ethers.getContractFactory('Ticket');
-        TicketManager = await ethers.getContractFactory('TicketManager');
-        EvenOdd = await ethers.getContractFactory('EvenOdd');
+        CashFactory = await ethers.getContractFactory('Cash');
+        CashManagerFactory = await ethers.getContractFactory('CashManager');
+        TicketFactory = await ethers.getContractFactory('Ticket');
+        TicketManagerFactory = await ethers.getContractFactory('TicketManager');
+        EvenOddFactory = await ethers.getContractFactory('EvenOdd');
 
         [owner, user1, user2, user3] = await ethers.getSigners();
 
-        cash = await upgrades.deployProxy(Cash);
+        cash = (await upgrades.deployProxy(CashFactory)) as Cash;
         await cash.deployed();
 
-        ticket = await upgrades.deployProxy(Ticket);
+        ticket = (await upgrades.deployProxy(TicketFactory)) as Ticket;
         await ticket.deployed();
 
-        cashManager = await upgrades.deployProxy(CashManager, [cash.address]);
+        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
         await cashManager.deployed();
 
-        ticketManager = await upgrades.deployProxy(TicketManager, [ticket.address]);
+        ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [ticket.address, cash.address])) as TicketManager;
         await ticketManager.deployed();
 
-        evenOdd = await upgrades.deployProxy(EvenOdd, [cash.address, cashManager.address, ticketManager.address]);
+        evenOdd = (await upgrades.deployProxy(EvenOddFactory, [cash.address, cashManager.address, ticketManager.address])) as EvenOdd;
         await evenOdd.deployed();
 
         await cash.connect(owner).transferOwnership(cashManager.address);
         await ticket.connect(owner).transferOwnership(ticketManager.address);
+        await ticketManager.connect(owner).transferOwnership(evenOdd.address);
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user3).approve(evenOdd.address, ethers.constants.MaxUint256);
 
         decimals = await cash.decimals();
-        pricePerCash = await cashManager.pricePerCash();
         pricePerTime = await ticketManager.pricePerTime();
 
-        await evenOdd.supplyToken(ethers.utils.parseUnits('50000', decimals), {
-            value: 50000 * pricePerCash,
+        await evenOdd.supplyToken({
+            value: ethers.utils.parseUnits('50000', decimals),
         });
     });
 
     it("Play 3 games with 1 user -> User's ticket is expired -> Extends ticket -> Play 1 game with 1 user -> withdraw all token", async () => {
         await ticketManager.connect(user1).buy(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        await cashManager.connect(user1).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user1).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
         const cashBetted = ethers.utils.parseUnits('10', decimals);
@@ -118,11 +153,11 @@ describe('[Integration Test] Testing flow of the game', () => {
             balanceOfUser = balanceOfUser.add(cashReward);
         }
 
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.false;
 
         // Game 4
         lastMatch = await evenOdd.lastMatch();
@@ -159,33 +194,32 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
-        const withdrawCash = balanceOfUser / 10 ** decimals;
-        if (withdrawCash > 0) {
+        if (balanceOfUser.gt(0)) {
             await expect(cashManager.connect(user1).withdraw(balanceOfUser)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [`-${withdrawCash * pricePerCash}`, withdrawCash * pricePerCash]
+                [-balanceOfUser, balanceOfUser]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
     });
 
     it("Play 2 games with 3 user -> user1's ticket is expired -> extends ticket -> play 1 game with 3 users", async () => {
-        await cashManager.connect(user1).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user1).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
         await ticketManager.connect(user2).buy(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        await cashManager.connect(user2).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user2).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
         await ticketManager.connect(user3).buy(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        await cashManager.connect(user3).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user3).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
         const cashBetted = ethers.utils.parseUnits('10', decimals);
@@ -321,11 +355,11 @@ describe('[Integration Test] Testing flow of the game', () => {
             await evenOdd.connect(user2).withdraw(lastMatch);
         }
 
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.false;
 
         // Game 3
         lastMatch = await evenOdd.lastMatch();
@@ -399,17 +433,17 @@ describe('[Integration Test] Testing flow of the game', () => {
         const cashBetted = ethers.utils.parseUnits('10', decimals);
         const cashReward = ethers.utils.parseUnits('20', decimals);
 
-        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user2.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user2).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user2.address)).times.eq(0)).to.be.false;
 
-        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user3.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user3).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user3.address)).times.eq(0)).to.be.false;
 
         // Game 1
         lastMatch = await evenOdd.lastMatch();
@@ -524,11 +558,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         // User1's ticket is expired
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.false;
 
         // Game 3
         lastMatch = await evenOdd.lastMatch();
@@ -595,11 +629,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         // Ticket of user2 is expired
-        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user2.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user2).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user2.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user2.address)).times.eq(0)).to.be.false;
 
         // Game 4
         lastMatch = await evenOdd.lastMatch();
@@ -669,61 +703,52 @@ describe('[Integration Test] Testing flow of the game', () => {
         expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // withdraw token
-        if (balanceOfUser1 > 0) {
+        if (balanceOfUser1.gt(0)) {
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [
-                    `-${(balanceOfUser1 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser1 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser1, balanceOfUser1]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
 
-        if (balanceOfUser2 > 0) {
+        if (balanceOfUser2.gt(0)) {
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
-                [
-                    `-${(balanceOfUser2 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser2 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser2, balanceOfUser2]
             );
             expect(await cash.balanceOf(user2.address)).to.equal(0);
         }
 
-        if (balanceOfUser3 > 0) {
+        if (balanceOfUser3.gt(0)) {
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [
-                    `-${(balanceOfUser3 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser3 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser3, balanceOfUser3]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
         }
     });
 
     it('Ticket of user3 is expired -> Extends ticket -> Play 1 game with 3 users -> Ticket of user1 is expired -> Extends ticket -> User3 withdraw all token -> Play 1 game with 3 users (user3 does not have enough token to bet) -> User1 transfer to User3 -> Play 1 game with 3 users -> withdraw) ', async () => {
-        await cashManager.connect(user1).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user1).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
-        await cashManager.connect(user2).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user2).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
-        await cashManager.connect(user3).buy(ethers.utils.parseUnits('1000', decimals), {
-            value: 1000 * pricePerCash,
+        await cashManager.connect(user3).buy({
+            value: ethers.utils.parseUnits('1000', decimals),
         });
 
         const cashBetted = ethers.utils.parseUnits('10', decimals);
         const cashReward = ethers.utils.parseUnits('20', decimals);
 
-        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user3.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user3).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user3.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user3.address)).times.eq(0)).to.be.false;
 
         // Game 1
         let lastMatch = await evenOdd.lastMatch();
@@ -793,20 +818,17 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         // User1's ticket is expired'
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.true;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user1).extendTicket(3, {
-            value: 3 * pricePerTime,
+            value: pricePerTime.mul(3),
         });
-        expect(await ticketManager.isOutOfTimes(user1.address)).to.be.false;
+        expect((await ticketManager.ticketOf(user1.address)).times.eq(0)).to.be.false;
 
         // User3 withdraw all tokens
-        if (balanceOfUser3 > 0) {
+        if (balanceOfUser3.gt(0)) {
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [
-                    `-${(balanceOfUser3 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser3 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser3, balanceOfUser3]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
             balanceOfUser3 = ethers.BigNumber.from('0');
@@ -847,9 +869,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         );
 
         // User3 bet but does not have enough tokens and user1 transfer `cashBetted` tokens to user3
-        await expect(evenOdd.connect(user3).bet(true, cashBetted)).to.be.revertedWith(
-            "User's balance is not enough to bet"
-        );
+        await expect(evenOdd.connect(user3).bet(true, cashBetted)).to.be.revertedWith('Exceeds balance!');
         await expect(cash.connect(user1).transfer(user3.address, cashBetted)).to.changeTokenBalances(
             cash,
             [user1.address, user3.address],
@@ -893,35 +913,26 @@ describe('[Integration Test] Testing flow of the game', () => {
         expect(await cash.balanceOf(user3.address)).equal(balanceOfUser3);
 
         // withdraw token
-        if (balanceOfUser1 > 0) {
+        if (balanceOfUser1.gt(0)) {
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [
-                    `-${(balanceOfUser1 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser1 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser1, balanceOfUser1]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
 
-        if (balanceOfUser2 > 0) {
+        if (balanceOfUser2.gt(0)) {
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
-                [
-                    `-${(balanceOfUser2 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser2 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser2, balanceOfUser2]
             );
             expect(await cash.balanceOf(user2.address)).to.equal(0);
         }
 
-        if (balanceOfUser3 > 0) {
+        if (balanceOfUser3.gt(0)) {
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [
-                    `-${(balanceOfUser3 * pricePerCash) / 10 ** decimals}`,
-                    (balanceOfUser3 * pricePerCash) / 10 ** decimals,
-                ]
+                [-balanceOfUser3, balanceOfUser3]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
         }
