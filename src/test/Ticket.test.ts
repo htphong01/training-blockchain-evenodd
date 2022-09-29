@@ -15,7 +15,7 @@ describe('Testing Ticket contract', function () {
     let owner: SignerWithAddress;
     let user1: SignerWithAddress;
     let user2: SignerWithAddress;
-    
+
     let TicketFactory: Ticket__factory;
     let TicketManagerFactory: TicketManager__factory;
     let CashFactory: Cash__factory;

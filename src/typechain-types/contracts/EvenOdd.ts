@@ -2,669 +2,542 @@
 /* tslint:disable */
 /* eslint-disable */
 import type {
-  BaseContract,
-  BigNumber,
-  BigNumberish,
-  BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
-  FunctionFragment,
-  Result,
-  EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from "../common";
+    BaseContract,
+    BigNumber,
+    BigNumberish,
+    BytesLike,
+    CallOverrides,
+    ContractTransaction,
+    Overrides,
+    PayableOverrides,
+    PopulatedTransaction,
+    Signer,
+    utils,
+} from 'ethers';
+import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
+import type { Listener, Provider } from '@ethersproject/providers';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent, PromiseOrValue } from '../common';
 
 export interface EvenOddInterface extends utils.Interface {
-  functions: {
-    "bet(bool,uint256)": FunctionFragment;
-    "cash()": FunctionFragment;
-    "cashManager()": FunctionFragment;
-    "initialize(address,address,address)": FunctionFragment;
-    "lastMatch()": FunctionFragment;
-    "matchList(uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
-    "play()": FunctionFragment;
-    "playerList(uint256,uint256)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "supplyToken()": FunctionFragment;
-    "ticketManager()": FunctionFragment;
-    "totalCashBetted()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
-    "withdraw(uint256)": FunctionFragment;
-  };
+    functions: {
+        'bet(bool,uint256)': FunctionFragment;
+        'cash()': FunctionFragment;
+        'cashManager()': FunctionFragment;
+        'initialize(address,address,address)': FunctionFragment;
+        'lastMatch()': FunctionFragment;
+        'matchList(uint256)': FunctionFragment;
+        'owner()': FunctionFragment;
+        'play()': FunctionFragment;
+        'playerList(uint256,uint256)': FunctionFragment;
+        'renounceOwnership()': FunctionFragment;
+        'supplyToken()': FunctionFragment;
+        'ticketManager()': FunctionFragment;
+        'totalCashBetted()': FunctionFragment;
+        'transferOwnership(address)': FunctionFragment;
+        'withdraw(uint256)': FunctionFragment;
+    };
 
-  getFunction(
-    nameOrSignatureOrTopic:
-      | "bet"
-      | "cash"
-      | "cashManager"
-      | "initialize"
-      | "lastMatch"
-      | "matchList"
-      | "owner"
-      | "play"
-      | "playerList"
-      | "renounceOwnership"
-      | "supplyToken"
-      | "ticketManager"
-      | "totalCashBetted"
-      | "transferOwnership"
-      | "withdraw"
-  ): FunctionFragment;
+    getFunction(
+        nameOrSignatureOrTopic:
+            | 'bet'
+            | 'cash'
+            | 'cashManager'
+            | 'initialize'
+            | 'lastMatch'
+            | 'matchList'
+            | 'owner'
+            | 'play'
+            | 'playerList'
+            | 'renounceOwnership'
+            | 'supplyToken'
+            | 'ticketManager'
+            | 'totalCashBetted'
+            | 'transferOwnership'
+            | 'withdraw'
+    ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "bet",
-    values: [PromiseOrValue<boolean>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: "cash", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "cashManager",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>
-    ]
-  ): string;
-  encodeFunctionData(functionFragment: "lastMatch", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "matchList",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(functionFragment: "play", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "playerList",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "supplyToken",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "ticketManager",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalCashBetted",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdraw",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
+    encodeFunctionData(
+        functionFragment: 'bet',
+        values: [PromiseOrValue<boolean>, PromiseOrValue<BigNumberish>]
+    ): string;
+    encodeFunctionData(functionFragment: 'cash', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'cashManager', values?: undefined): string;
+    encodeFunctionData(
+        functionFragment: 'initialize',
+        values: [PromiseOrValue<string>, PromiseOrValue<string>, PromiseOrValue<string>]
+    ): string;
+    encodeFunctionData(functionFragment: 'lastMatch', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'matchList', values: [PromiseOrValue<BigNumberish>]): string;
+    encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'play', values?: undefined): string;
+    encodeFunctionData(
+        functionFragment: 'playerList',
+        values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    ): string;
+    encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'supplyToken', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'ticketManager', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'totalCashBetted', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'transferOwnership', values: [PromiseOrValue<string>]): string;
+    encodeFunctionData(functionFragment: 'withdraw', values: [PromiseOrValue<BigNumberish>]): string;
 
-  decodeFunctionResult(functionFragment: "bet", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "cash", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "cashManager",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "lastMatch", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "matchList", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "play", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "playerList", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "supplyToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "ticketManager",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalCashBetted",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'bet', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'cash', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'cashManager', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'lastMatch', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'matchList', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'play', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'playerList', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'supplyToken', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'ticketManager', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'totalCashBetted', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'withdraw', data: BytesLike): Result;
 
-  events: {
-    "Betted(address,uint256,bool,uint256)": EventFragment;
-    "Initialized(uint8)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
-    "Played(uint256,bool)": EventFragment;
-    "Received(address,uint256)": EventFragment;
-    "SuppliedToken(address,uint256)": EventFragment;
-    "WithDrawn(address,uint256,uint256)": EventFragment;
-  };
+    events: {
+        'Betted(address,uint256,bool,uint256)': EventFragment;
+        'Initialized(uint8)': EventFragment;
+        'OwnershipTransferred(address,address)': EventFragment;
+        'Played(uint256,bool)': EventFragment;
+        'Received(address,uint256)': EventFragment;
+        'SuppliedToken(address,uint256)': EventFragment;
+        'WithDrawn(address,uint256,uint256)': EventFragment;
+    };
 
-  getEvent(nameOrSignatureOrTopic: "Betted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Played"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Received"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SuppliedToken"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "WithDrawn"): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Betted'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Initialized'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'OwnershipTransferred'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Played'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Received'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'SuppliedToken'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'WithDrawn'): EventFragment;
 }
 
 export interface BettedEventObject {
-  _account: string;
-  _gameId: BigNumber;
-  _isOdd: boolean;
-  _amount: BigNumber;
+    _account: string;
+    _gameId: BigNumber;
+    _isOdd: boolean;
+    _amount: BigNumber;
 }
-export type BettedEvent = TypedEvent<
-  [string, BigNumber, boolean, BigNumber],
-  BettedEventObject
->;
+export type BettedEvent = TypedEvent<[string, BigNumber, boolean, BigNumber], BettedEventObject>;
 
 export type BettedEventFilter = TypedEventFilter<BettedEvent>;
 
 export interface InitializedEventObject {
-  version: number;
+    version: number;
 }
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
+    previousOwner: string;
+    newOwner: string;
 }
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
+export type OwnershipTransferredEvent = TypedEvent<[string, string], OwnershipTransferredEventObject>;
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnershipTransferredEventFilter = TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface PlayedEventObject {
-  _matchId: BigNumber;
-  _isOdd: boolean;
+    _matchId: BigNumber;
+    _isOdd: boolean;
 }
 export type PlayedEvent = TypedEvent<[BigNumber, boolean], PlayedEventObject>;
 
 export type PlayedEventFilter = TypedEventFilter<PlayedEvent>;
 
 export interface ReceivedEventObject {
-  _from: string;
-  _amount: BigNumber;
+    _from: string;
+    _amount: BigNumber;
 }
-export type ReceivedEvent = TypedEvent<
-  [string, BigNumber],
-  ReceivedEventObject
->;
+export type ReceivedEvent = TypedEvent<[string, BigNumber], ReceivedEventObject>;
 
 export type ReceivedEventFilter = TypedEventFilter<ReceivedEvent>;
 
 export interface SuppliedTokenEventObject {
-  _from: string;
-  _amount: BigNumber;
+    _from: string;
+    _amount: BigNumber;
 }
-export type SuppliedTokenEvent = TypedEvent<
-  [string, BigNumber],
-  SuppliedTokenEventObject
->;
+export type SuppliedTokenEvent = TypedEvent<[string, BigNumber], SuppliedTokenEventObject>;
 
 export type SuppliedTokenEventFilter = TypedEventFilter<SuppliedTokenEvent>;
 
 export interface WithDrawnEventObject {
-  _to: string;
-  _matchId: BigNumber;
-  _amount: BigNumber;
+    _to: string;
+    _matchId: BigNumber;
+    _amount: BigNumber;
 }
-export type WithDrawnEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
-  WithDrawnEventObject
->;
+export type WithDrawnEvent = TypedEvent<[string, BigNumber, BigNumber], WithDrawnEventObject>;
 
 export type WithDrawnEventFilter = TypedEventFilter<WithDrawnEvent>;
 
 export interface EvenOdd extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+    connect(signerOrProvider: Signer | Provider | string): this;
+    attach(addressOrName: string): this;
+    deployed(): Promise<this>;
 
-  interface: EvenOddInterface;
+    interface: EvenOddInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+    queryFilter<TEvent extends TypedEvent>(
+        event: TypedEventFilter<TEvent>,
+        fromBlockOrBlockhash?: string | number | undefined,
+        toBlock?: string | number | undefined
+    ): Promise<Array<TEvent>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+    listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>;
+    listeners(eventName?: string): Array<Listener>;
+    removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this;
+    removeAllListeners(eventName?: string): this;
+    off: OnEvent<this>;
+    on: OnEvent<this>;
+    once: OnEvent<this>;
+    removeListener: OnEvent<this>;
 
-  functions: {
+    functions: {
+        bet(
+            _isOdd: PromiseOrValue<boolean>,
+            _amount: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+
+        cash(overrides?: CallOverrides): Promise<[string]>;
+
+        cashManager(overrides?: CallOverrides): Promise<[string]>;
+
+        initialize(
+            _cashAddress: PromiseOrValue<string>,
+            _cashManagerAddress: PromiseOrValue<string>,
+            _ticketManagerAddress: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+
+        lastMatch(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+        matchList(
+            arg0: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<
+            [BigNumber, BigNumber, boolean] & {
+                roll1: BigNumber;
+                roll2: BigNumber;
+                isOdd: boolean;
+            }
+        >;
+
+        owner(overrides?: CallOverrides): Promise<[string]>;
+
+        play(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
+
+        playerList(
+            arg0: PromiseOrValue<BigNumberish>,
+            arg1: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<
+            [BigNumber, boolean, BigNumber, boolean] & {
+                ticketId: BigNumber;
+                isOdd: boolean;
+                bet: BigNumber;
+                isRewarded: boolean;
+            }
+        >;
+
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
+
+        supplyToken(overrides?: PayableOverrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
+
+        ticketManager(overrides?: CallOverrides): Promise<[string]>;
+
+        totalCashBetted(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+
+        withdraw(
+            _matchId: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+    };
+
     bet(
-      _isOdd: PromiseOrValue<boolean>,
-      _amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+        _isOdd: PromiseOrValue<boolean>,
+        _amount: PromiseOrValue<BigNumberish>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    cash(overrides?: CallOverrides): Promise<[string]>;
-
-    cashManager(overrides?: CallOverrides): Promise<[string]>;
-
-    initialize(
-      _cashAddress: PromiseOrValue<string>,
-      _cashManagerAddress: PromiseOrValue<string>,
-      _ticketManagerAddress: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    lastMatch(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    matchList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, BigNumber, boolean] & {
-        roll1: BigNumber;
-        roll2: BigNumber;
-        isOdd: boolean;
-      }
-    >;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    play(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    playerList(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, boolean, BigNumber, boolean] & {
-        ticketId: BigNumber;
-        isOdd: boolean;
-        bet: BigNumber;
-        isRewarded: boolean;
-      }
-    >;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    supplyToken(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    ticketManager(overrides?: CallOverrides): Promise<[string]>;
-
-    totalCashBetted(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    withdraw(
-      _matchId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
-
-  bet(
-    _isOdd: PromiseOrValue<boolean>,
-    _amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  cash(overrides?: CallOverrides): Promise<string>;
-
-  cashManager(overrides?: CallOverrides): Promise<string>;
-
-  initialize(
-    _cashAddress: PromiseOrValue<string>,
-    _cashManagerAddress: PromiseOrValue<string>,
-    _ticketManagerAddress: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  lastMatch(overrides?: CallOverrides): Promise<BigNumber>;
-
-  matchList(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, BigNumber, boolean] & {
-      roll1: BigNumber;
-      roll2: BigNumber;
-      isOdd: boolean;
-    }
-  >;
-
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  play(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  playerList(
-    arg0: PromiseOrValue<BigNumberish>,
-    arg1: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, boolean, BigNumber, boolean] & {
-      ticketId: BigNumber;
-      isOdd: boolean;
-      bet: BigNumber;
-      isRewarded: boolean;
-    }
-  >;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  supplyToken(
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  ticketManager(overrides?: CallOverrides): Promise<string>;
-
-  totalCashBetted(overrides?: CallOverrides): Promise<BigNumber>;
-
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  withdraw(
-    _matchId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  callStatic: {
-    bet(
-      _isOdd: PromiseOrValue<boolean>,
-      _amount: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     cash(overrides?: CallOverrides): Promise<string>;
 
     cashManager(overrides?: CallOverrides): Promise<string>;
 
     initialize(
-      _cashAddress: PromiseOrValue<string>,
-      _cashManagerAddress: PromiseOrValue<string>,
-      _ticketManagerAddress: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+        _cashAddress: PromiseOrValue<string>,
+        _cashManagerAddress: PromiseOrValue<string>,
+        _ticketManagerAddress: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     lastMatch(overrides?: CallOverrides): Promise<BigNumber>;
 
     matchList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
+        arg0: PromiseOrValue<BigNumberish>,
+        overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, boolean] & {
-        roll1: BigNumber;
-        roll2: BigNumber;
-        isOdd: boolean;
-      }
+        [BigNumber, BigNumber, boolean] & {
+            roll1: BigNumber;
+            roll2: BigNumber;
+            isOdd: boolean;
+        }
     >;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
-    play(overrides?: CallOverrides): Promise<void>;
+    play(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
 
     playerList(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
+        arg0: PromiseOrValue<BigNumberish>,
+        arg1: PromiseOrValue<BigNumberish>,
+        overrides?: CallOverrides
     ): Promise<
-      [BigNumber, boolean, BigNumber, boolean] & {
-        ticketId: BigNumber;
-        isOdd: boolean;
-        bet: BigNumber;
-        isRewarded: boolean;
-      }
+        [BigNumber, boolean, BigNumber, boolean] & {
+            ticketId: BigNumber;
+            isOdd: boolean;
+            bet: BigNumber;
+            isRewarded: boolean;
+        }
     >;
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+    renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
 
-    supplyToken(overrides?: CallOverrides): Promise<void>;
+    supplyToken(overrides?: PayableOverrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
 
     ticketManager(overrides?: CallOverrides): Promise<string>;
 
     totalCashBetted(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+        newOwner: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     withdraw(
-      _matchId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+        _matchId: PromiseOrValue<BigNumberish>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  filters: {
-    "Betted(address,uint256,bool,uint256)"(
-      _account?: PromiseOrValue<string> | null,
-      _gameId?: PromiseOrValue<BigNumberish> | null,
-      _isOdd?: PromiseOrValue<boolean> | null,
-      _amount?: null
-    ): BettedEventFilter;
-    Betted(
-      _account?: PromiseOrValue<string> | null,
-      _gameId?: PromiseOrValue<BigNumberish> | null,
-      _isOdd?: PromiseOrValue<boolean> | null,
-      _amount?: null
-    ): BettedEventFilter;
+    callStatic: {
+        bet(
+            _isOdd: PromiseOrValue<boolean>,
+            _amount: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<void>;
 
-    "Initialized(uint8)"(version?: null): InitializedEventFilter;
-    Initialized(version?: null): InitializedEventFilter;
+        cash(overrides?: CallOverrides): Promise<string>;
 
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
+        cashManager(overrides?: CallOverrides): Promise<string>;
 
-    "Played(uint256,bool)"(
-      _matchId?: PromiseOrValue<BigNumberish> | null,
-      _isOdd?: null
-    ): PlayedEventFilter;
-    Played(
-      _matchId?: PromiseOrValue<BigNumberish> | null,
-      _isOdd?: null
-    ): PlayedEventFilter;
+        initialize(
+            _cashAddress: PromiseOrValue<string>,
+            _cashManagerAddress: PromiseOrValue<string>,
+            _ticketManagerAddress: PromiseOrValue<string>,
+            overrides?: CallOverrides
+        ): Promise<void>;
 
-    "Received(address,uint256)"(
-      _from?: PromiseOrValue<string> | null,
-      _amount?: null
-    ): ReceivedEventFilter;
-    Received(
-      _from?: PromiseOrValue<string> | null,
-      _amount?: null
-    ): ReceivedEventFilter;
+        lastMatch(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "SuppliedToken(address,uint256)"(
-      _from?: PromiseOrValue<string> | null,
-      _amount?: null
-    ): SuppliedTokenEventFilter;
-    SuppliedToken(
-      _from?: PromiseOrValue<string> | null,
-      _amount?: null
-    ): SuppliedTokenEventFilter;
+        matchList(
+            arg0: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<
+            [BigNumber, BigNumber, boolean] & {
+                roll1: BigNumber;
+                roll2: BigNumber;
+                isOdd: boolean;
+            }
+        >;
 
-    "WithDrawn(address,uint256,uint256)"(
-      _to?: PromiseOrValue<string> | null,
-      _matchId?: PromiseOrValue<BigNumberish> | null,
-      _amount?: null
-    ): WithDrawnEventFilter;
-    WithDrawn(
-      _to?: PromiseOrValue<string> | null,
-      _matchId?: PromiseOrValue<BigNumberish> | null,
-      _amount?: null
-    ): WithDrawnEventFilter;
-  };
+        owner(overrides?: CallOverrides): Promise<string>;
 
-  estimateGas: {
-    bet(
-      _isOdd: PromiseOrValue<boolean>,
-      _amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        play(overrides?: CallOverrides): Promise<void>;
 
-    cash(overrides?: CallOverrides): Promise<BigNumber>;
+        playerList(
+            arg0: PromiseOrValue<BigNumberish>,
+            arg1: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<
+            [BigNumber, boolean, BigNumber, boolean] & {
+                ticketId: BigNumber;
+                isOdd: boolean;
+                bet: BigNumber;
+                isRewarded: boolean;
+            }
+        >;
 
-    cashManager(overrides?: CallOverrides): Promise<BigNumber>;
+        renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    initialize(
-      _cashAddress: PromiseOrValue<string>,
-      _cashManagerAddress: PromiseOrValue<string>,
-      _ticketManagerAddress: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        supplyToken(overrides?: CallOverrides): Promise<void>;
 
-    lastMatch(overrides?: CallOverrides): Promise<BigNumber>;
+        ticketManager(overrides?: CallOverrides): Promise<string>;
 
-    matchList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+        totalCashBetted(overrides?: CallOverrides): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+        transferOwnership(newOwner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
 
-    play(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        withdraw(_matchId: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<void>;
+    };
 
-    playerList(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    filters: {
+        'Betted(address,uint256,bool,uint256)'(
+            _account?: PromiseOrValue<string> | null,
+            _gameId?: PromiseOrValue<BigNumberish> | null,
+            _isOdd?: PromiseOrValue<boolean> | null,
+            _amount?: null
+        ): BettedEventFilter;
+        Betted(
+            _account?: PromiseOrValue<string> | null,
+            _gameId?: PromiseOrValue<BigNumberish> | null,
+            _isOdd?: PromiseOrValue<boolean> | null,
+            _amount?: null
+        ): BettedEventFilter;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        'Initialized(uint8)'(version?: null): InitializedEventFilter;
+        Initialized(version?: null): InitializedEventFilter;
 
-    supplyToken(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        'OwnershipTransferred(address,address)'(
+            previousOwner?: PromiseOrValue<string> | null,
+            newOwner?: PromiseOrValue<string> | null
+        ): OwnershipTransferredEventFilter;
+        OwnershipTransferred(
+            previousOwner?: PromiseOrValue<string> | null,
+            newOwner?: PromiseOrValue<string> | null
+        ): OwnershipTransferredEventFilter;
 
-    ticketManager(overrides?: CallOverrides): Promise<BigNumber>;
+        'Played(uint256,bool)'(_matchId?: PromiseOrValue<BigNumberish> | null, _isOdd?: null): PlayedEventFilter;
+        Played(_matchId?: PromiseOrValue<BigNumberish> | null, _isOdd?: null): PlayedEventFilter;
 
-    totalCashBetted(overrides?: CallOverrides): Promise<BigNumber>;
+        'Received(address,uint256)'(_from?: PromiseOrValue<string> | null, _amount?: null): ReceivedEventFilter;
+        Received(_from?: PromiseOrValue<string> | null, _amount?: null): ReceivedEventFilter;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        'SuppliedToken(address,uint256)'(
+            _from?: PromiseOrValue<string> | null,
+            _amount?: null
+        ): SuppliedTokenEventFilter;
+        SuppliedToken(_from?: PromiseOrValue<string> | null, _amount?: null): SuppliedTokenEventFilter;
 
-    withdraw(
-      _matchId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
+        'WithDrawn(address,uint256,uint256)'(
+            _to?: PromiseOrValue<string> | null,
+            _matchId?: PromiseOrValue<BigNumberish> | null,
+            _amount?: null
+        ): WithDrawnEventFilter;
+        WithDrawn(
+            _to?: PromiseOrValue<string> | null,
+            _matchId?: PromiseOrValue<BigNumberish> | null,
+            _amount?: null
+        ): WithDrawnEventFilter;
+    };
 
-  populateTransaction: {
-    bet(
-      _isOdd: PromiseOrValue<boolean>,
-      _amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    estimateGas: {
+        bet(
+            _isOdd: PromiseOrValue<boolean>,
+            _amount: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
 
-    cash(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        cash(overrides?: CallOverrides): Promise<BigNumber>;
 
-    cashManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        cashManager(overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(
-      _cashAddress: PromiseOrValue<string>,
-      _cashManagerAddress: PromiseOrValue<string>,
-      _ticketManagerAddress: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        initialize(
+            _cashAddress: PromiseOrValue<string>,
+            _cashManagerAddress: PromiseOrValue<string>,
+            _ticketManagerAddress: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
 
-    lastMatch(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        lastMatch(overrides?: CallOverrides): Promise<BigNumber>;
 
-    matchList(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+        matchList(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    play(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        play(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
 
-    playerList(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+        playerList(
+            arg0: PromiseOrValue<BigNumberish>,
+            arg1: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<BigNumber>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
 
-    supplyToken(
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        supplyToken(overrides?: PayableOverrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
 
-    ticketManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        ticketManager(overrides?: CallOverrides): Promise<BigNumber>;
 
-    totalCashBetted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        totalCashBetted(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
 
-    withdraw(
-      _matchId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+        withdraw(
+            _matchId: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
+    };
+
+    populateTransaction: {
+        bet(
+            _isOdd: PromiseOrValue<boolean>,
+            _amount: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+
+        cash(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        cashManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        initialize(
+            _cashAddress: PromiseOrValue<string>,
+            _cashManagerAddress: PromiseOrValue<string>,
+            _ticketManagerAddress: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+
+        lastMatch(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        matchList(arg0: PromiseOrValue<BigNumberish>, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        play(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<PopulatedTransaction>;
+
+        playerList(
+            arg0: PromiseOrValue<BigNumberish>,
+            arg1: PromiseOrValue<BigNumberish>,
+            overrides?: CallOverrides
+        ): Promise<PopulatedTransaction>;
+
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<PopulatedTransaction>;
+
+        supplyToken(overrides?: PayableOverrides & { from?: PromiseOrValue<string> }): Promise<PopulatedTransaction>;
+
+        ticketManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        totalCashBetted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+
+        withdraw(
+            _matchId: PromiseOrValue<BigNumberish>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+    };
 }

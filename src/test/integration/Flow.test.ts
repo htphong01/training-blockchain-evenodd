@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber } from 'ethers';
+import { parseEther, parseUnits } from 'ethers/lib/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
     Cash__factory,
@@ -55,10 +56,17 @@ describe('[Integration Test] Testing flow of the game', () => {
         cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
         await cashManager.deployed();
 
-        ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [ticket.address, cash.address])) as TicketManager;
+        ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [
+            ticket.address,
+            cash.address,
+        ])) as TicketManager;
         await ticketManager.deployed();
 
-        evenOdd = (await upgrades.deployProxy(EvenOddFactory, [cash.address, cashManager.address, ticketManager.address])) as EvenOdd;
+        evenOdd = (await upgrades.deployProxy(EvenOddFactory, [
+            cash.address,
+            cashManager.address,
+            ticketManager.address,
+        ])) as EvenOdd;
         await evenOdd.deployed();
 
         await cash.connect(owner).transferOwnership(cashManager.address);
@@ -73,7 +81,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         pricePerTime = await ticketManager.pricePerTime();
 
         await evenOdd.supplyToken({
-            value: ethers.utils.parseUnits('50000', decimals),
+            value: parseUnits('50000', decimals),
         });
     });
 
@@ -82,11 +90,11 @@ describe('[Integration Test] Testing flow of the game', () => {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user1).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
-        const cashBetted = ethers.utils.parseUnits('10', decimals);
-        const cashReward = ethers.utils.parseUnits('20', decimals);
+        const cashBetted = parseUnits('10', decimals);
+        const cashReward = parseUnits('20', decimals);
         // Game 1
         let lastMatch = await evenOdd.lastMatch();
         await expect(
@@ -205,25 +213,25 @@ describe('[Integration Test] Testing flow of the game', () => {
 
     it("Play 2 games with 3 user -> user1's ticket is expired -> extends ticket -> play 1 game with 3 users", async () => {
         await cashManager.connect(user1).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
         await ticketManager.connect(user2).buy(3, {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user2).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
         await ticketManager.connect(user3).buy(3, {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user3).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
-        const cashBetted = ethers.utils.parseUnits('10', decimals);
-        const cashReward = ethers.utils.parseUnits('20', decimals);
+        const cashBetted = parseUnits('10', decimals);
+        const cashReward = parseUnits('20', decimals);
         // Game 1
         let lastMatch = await evenOdd.lastMatch();
         // -- User 1
@@ -430,8 +438,8 @@ describe('[Integration Test] Testing flow of the game', () => {
     });
 
     it("User2, User3 ticket is expired -> Extends ticket -> Play 1 game with 3 users -> Play 1 game with user1, user2 -> User1's ticket is expired -> Extends ticket -> Play 1 game with 3 users -> ticket of user 2 is expired -> extend ticket -> play 1 game 3 users -> withdraw all token", async () => {
-        const cashBetted = ethers.utils.parseUnits('10', decimals);
-        const cashReward = ethers.utils.parseUnits('20', decimals);
+        const cashBetted = parseUnits('10', decimals);
+        const cashReward = parseUnits('20', decimals);
 
         expect((await ticketManager.ticketOf(user2.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user2).extendTicket(3, {
@@ -730,19 +738,19 @@ describe('[Integration Test] Testing flow of the game', () => {
 
     it('Ticket of user3 is expired -> Extends ticket -> Play 1 game with 3 users -> Ticket of user1 is expired -> Extends ticket -> User3 withdraw all token -> Play 1 game with 3 users (user3 does not have enough token to bet) -> User1 transfer to User3 -> Play 1 game with 3 users -> withdraw) ', async () => {
         await cashManager.connect(user1).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
         await cashManager.connect(user2).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
         await cashManager.connect(user3).buy({
-            value: ethers.utils.parseUnits('1000', decimals),
+            value: parseUnits('1000', decimals),
         });
 
-        const cashBetted = ethers.utils.parseUnits('10', decimals);
-        const cashReward = ethers.utils.parseUnits('20', decimals);
+        const cashBetted = parseUnits('10', decimals);
+        const cashReward = parseUnits('20', decimals);
 
         expect((await ticketManager.ticketOf(user3.address)).times.eq(0)).to.be.true;
         await ticketManager.connect(user3).extendTicket(3, {

@@ -2,155 +2,112 @@
 /* tslint:disable */
 /* eslint-disable */
 import type {
-  BaseContract,
-  BigNumber,
-  BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
-  FunctionFragment,
-  Result,
-  EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from "../../../common";
+    BaseContract,
+    BigNumber,
+    BytesLike,
+    CallOverrides,
+    ContractTransaction,
+    Overrides,
+    PopulatedTransaction,
+    Signer,
+    utils,
+} from 'ethers';
+import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
+import type { Listener, Provider } from '@ethersproject/providers';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent, PromiseOrValue } from '../../../common';
 
 export interface PullPaymentUpgradeableInterface extends utils.Interface {
-  functions: {
-    "payments(address)": FunctionFragment;
-    "withdrawPayments(address)": FunctionFragment;
-  };
+    functions: {
+        'payments(address)': FunctionFragment;
+        'withdrawPayments(address)': FunctionFragment;
+    };
 
-  getFunction(
-    nameOrSignatureOrTopic: "payments" | "withdrawPayments"
-  ): FunctionFragment;
+    getFunction(nameOrSignatureOrTopic: 'payments' | 'withdrawPayments'): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "payments",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawPayments",
-    values: [PromiseOrValue<string>]
-  ): string;
+    encodeFunctionData(functionFragment: 'payments', values: [PromiseOrValue<string>]): string;
+    encodeFunctionData(functionFragment: 'withdrawPayments', values: [PromiseOrValue<string>]): string;
 
-  decodeFunctionResult(functionFragment: "payments", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawPayments",
-    data: BytesLike
-  ): Result;
+    decodeFunctionResult(functionFragment: 'payments', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'withdrawPayments', data: BytesLike): Result;
 
-  events: {
-    "Initialized(uint8)": EventFragment;
-  };
+    events: {
+        'Initialized(uint8)': EventFragment;
+    };
 
-  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Initialized'): EventFragment;
 }
 
 export interface InitializedEventObject {
-  version: number;
+    version: number;
 }
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface PullPaymentUpgradeable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+    connect(signerOrProvider: Signer | Provider | string): this;
+    attach(addressOrName: string): this;
+    deployed(): Promise<this>;
 
-  interface: PullPaymentUpgradeableInterface;
+    interface: PullPaymentUpgradeableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+    queryFilter<TEvent extends TypedEvent>(
+        event: TypedEventFilter<TEvent>,
+        fromBlockOrBlockhash?: string | number | undefined,
+        toBlock?: string | number | undefined
+    ): Promise<Array<TEvent>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+    listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>;
+    listeners(eventName?: string): Array<Listener>;
+    removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this;
+    removeAllListeners(eventName?: string): this;
+    off: OnEvent<this>;
+    on: OnEvent<this>;
+    once: OnEvent<this>;
+    removeListener: OnEvent<this>;
 
-  functions: {
-    payments(
-      dest: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    functions: {
+        payments(dest: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+        withdrawPayments(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+    };
+
+    payments(dest: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
     withdrawPayments(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+        payee: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-  };
 
-  payments(
-    dest: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+    callStatic: {
+        payments(dest: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
-  withdrawPayments(
-    payee: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+        withdrawPayments(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
+    };
 
-  callStatic: {
-    payments(
-      dest: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    filters: {
+        'Initialized(uint8)'(version?: null): InitializedEventFilter;
+        Initialized(version?: null): InitializedEventFilter;
+    };
 
-    withdrawPayments(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+    estimateGas: {
+        payments(dest: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
-  filters: {
-    "Initialized(uint8)"(version?: null): InitializedEventFilter;
-    Initialized(version?: null): InitializedEventFilter;
-  };
+        withdrawPayments(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
+    };
 
-  estimateGas: {
-    payments(
-      dest: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    populateTransaction: {
+        payments(dest: PromiseOrValue<string>, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    withdrawPayments(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
-
-  populateTransaction: {
-    payments(
-      dest: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    withdrawPayments(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+        withdrawPayments(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+    };
 }

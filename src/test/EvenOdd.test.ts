@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
 import { BigNumber } from 'ethers';
+import { parseEther, parseUnits } from 'ethers/lib/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import {
@@ -35,7 +36,7 @@ describe('Test EvenOdd Contract', () => {
 
     let decimals: number;
     let pricePerTime: BigNumber;
-    
+
     before(async () => {
         CashFactory = await ethers.getContractFactory('Cash');
         CashManagerFactory = await ethers.getContractFactory('CashManager');
@@ -56,7 +57,10 @@ describe('Test EvenOdd Contract', () => {
         cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
         await cashManager.deployed();
 
-        ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [ticket.address, cash.address])) as TicketManager;
+        ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [
+            ticket.address,
+            cash.address,
+        ])) as TicketManager;
         await ticketManager.deployed();
 
         await expect(
@@ -69,7 +73,11 @@ describe('Test EvenOdd Contract', () => {
             upgrades.deployProxy(EvenOddFactory, [cash.address, cashManager.address, user1.address])
         ).to.be.revertedWith('Invalid Ticket Manager contract');
 
-        evenOdd = (await upgrades.deployProxy(EvenOddFactory, [cash.address, cashManager.address, ticketManager.address])) as EvenOdd;
+        evenOdd = (await upgrades.deployProxy(EvenOddFactory, [
+            cash.address,
+            cashManager.address,
+            ticketManager.address,
+        ])) as EvenOdd;
         await evenOdd.deployed();
 
         await cash.connect(owner).transferOwnership(cashManager.address);
@@ -81,11 +89,11 @@ describe('Test EvenOdd Contract', () => {
 
         await expect(
             evenOdd.supplyToken({
-                value: ethers.utils.parseUnits('50000', decimals),
+                value: parseUnits('50000', decimals),
             })
         )
             .to.emit(evenOdd, 'SuppliedToken')
-            .withArgs(owner.address, ethers.utils.parseUnits('50000', decimals));
+            .withArgs(owner.address, parseUnits('50000', decimals));
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
@@ -112,11 +120,11 @@ describe('Test EvenOdd Contract', () => {
         it('[OK]: Send a transaction with 2 eth to evenOdd contract', async () => {
             const tx: TransactionRequest = {
                 to: evenOdd.address,
-                value: ethers.utils.parseEther('2'),
+                value: parseEther('2'),
             };
             await expect(user1.sendTransaction(tx))
                 .to.emit(evenOdd, 'Received')
-                .withArgs(user1.address, ethers.utils.parseEther('2'));
+                .withArgs(user1.address, parseEther('2'));
         });
     });
 
@@ -127,9 +135,9 @@ describe('Test EvenOdd Contract', () => {
 
         describe('Checking ticket of user', () => {
             it('[Fail]: Can not bet because user have not bought ticket', async () => {
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('0.1', decimals))
-                ).to.be.revertedWith('Invalid ticket!');
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('0.1', decimals))).to.be.revertedWith(
+                    'Invalid ticket!'
+                );
             });
 
             it('[Fail]: Can not bet because ticket of user is out of times', async () => {
@@ -138,15 +146,15 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('50', decimals),
+                    value: parseUnits('50', decimals),
                 });
 
-                await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('20', decimals));
+                await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
                 await evenOdd.play();
 
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('0.1', decimals))
-                ).to.be.revertedWith('Ticket is out of times!');
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('0.1', decimals))).to.be.revertedWith(
+                    'Ticket is out of times!'
+                );
             });
         });
 
@@ -157,16 +165,16 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('10', decimals),
+                    value: parseUnits('10', decimals),
                 });
 
-                await expect(evenOdd.connect(user1).bet(false, ethers.utils.parseUnits('0.3', decimals)))
+                await expect(evenOdd.connect(user1).bet(false, parseUnits('0.3', decimals)))
                     .to.emit(evenOdd, 'Betted')
-                    .withArgs(user1.address, 0, false, ethers.utils.parseUnits('0.3', decimals));
+                    .withArgs(user1.address, 0, false, parseUnits('0.3', decimals));
 
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('0.2', decimals))
-                ).to.be.revertedWith('Betted before!');
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('0.2', decimals))).to.be.revertedWith(
+                    'Betted before!'
+                );
             });
         });
 
@@ -177,12 +185,12 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('1', decimals),
+                    value: parseUnits('1', decimals),
                 });
 
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('1.1', decimals))
-                ).to.be.revertedWith('Exceeds balance!');
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('1.1', decimals))).to.be.revertedWith(
+                    'Exceeds balance!'
+                );
             });
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
@@ -191,12 +199,12 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('50001', decimals),
+                    value: parseUnits('50001', decimals),
                 });
 
-                await expect(
-                    evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('50001', decimals))
-                ).to.be.revertedWith('Not enough to reward!');
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('50001', decimals))).to.be.revertedWith(
+                    'Not enough to reward!'
+                );
             });
 
             it('[Fail]: Can not bet because the balance of contract is not enough', async () => {
@@ -205,21 +213,21 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('30000', decimals),
+                    value: parseUnits('30000', decimals),
                 });
-                await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('30000', decimals));
+                await evenOdd.connect(user1).bet(true, parseUnits('30000', decimals));
 
                 await ticketManager.connect(user2).buy(3, {
                     value: pricePerTime.mul(3),
                 });
 
                 await cashManager.connect(user2).buy({
-                    value: ethers.utils.parseUnits('30000', decimals),
+                    value: parseUnits('30000', decimals),
                 });
 
-                await expect(
-                    evenOdd.connect(user2).bet(true, ethers.utils.parseUnits('30000', decimals))
-                ).to.be.revertedWith('Not enough to reward!');
+                await expect(evenOdd.connect(user2).bet(true, parseUnits('30000', decimals))).to.be.revertedWith(
+                    'Not enough to reward!'
+                );
             });
         });
 
@@ -229,17 +237,17 @@ describe('Test EvenOdd Contract', () => {
                     value: pricePerTime.mul(3),
                 });
                 await cashManager.connect(user1).buy({
-                    value: ethers.utils.parseUnits('20', decimals),
+                    value: parseUnits('20', decimals),
                 });
 
-                await expect(evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('20', decimals)))
+                await expect(evenOdd.connect(user1).bet(true, parseUnits('20', decimals)))
                     .to.changeTokenBalances(
                         cash,
                         [evenOdd.address, user1.address],
-                        [ethers.utils.parseUnits('20', decimals), ethers.utils.parseUnits('-20', decimals)]
+                        [parseUnits('20', decimals), parseUnits('-20', decimals)]
                     )
                     .to.emit(evenOdd, 'Betted')
-                    .withArgs(user1.address, 0, true, ethers.utils.parseUnits('20', decimals));
+                    .withArgs(user1.address, 0, true, parseUnits('20', decimals));
 
                 const userTicket = await ticketManager.ticketOf(user1.address);
                 const lastMatch = await evenOdd.lastMatch();
@@ -252,7 +260,7 @@ describe('Test EvenOdd Contract', () => {
                     true
                 );
                 expect(player.bet, 'Token in match history must be the same as token the user has betted').to.equal(
-                    ethers.utils.parseUnits('20', decimals)
+                    parseUnits('20', decimals)
                 );
             });
         });
@@ -271,10 +279,10 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
 
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
             await evenOdd.play();
 
             const afterMatchId = await evenOdd.lastMatch();
@@ -292,9 +300,9 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user1).bet(false, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user1).bet(false, parseUnits('20', decimals));
 
             await expect(evenOdd.connect(user1).withdraw(0)).to.be.revertedWith('Invalid match!');
         });
@@ -304,18 +312,18 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
 
             await ticketManager.connect(user2).buy(3, {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
 
-            await evenOdd.connect(user2).bet(false, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user2).bet(false, parseUnits('20', decimals));
 
             const lastMatch = await evenOdd.lastMatch();
             await evenOdd.play();
@@ -341,17 +349,17 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
 
             await ticketManager.connect(user2).buy(3, {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user2).bet(false, ethers.utils.parseUnits('20', decimals));
+            await evenOdd.connect(user2).bet(false, parseUnits('20', decimals));
 
             const lastMatch = await evenOdd.lastMatch();
             await evenOdd.play();
@@ -371,36 +379,36 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user1).bet(true, ethers.utils.parseUnits('2.5', decimals));
+            await evenOdd.connect(user1).bet(true, parseUnits('2.5', decimals));
 
             await ticketManager.connect(user2).buy(3, {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: ethers.utils.parseUnits('50', decimals),
+                value: parseUnits('50', decimals),
             });
-            await evenOdd.connect(user2).bet(false, ethers.utils.parseUnits('2.5', decimals));
+            await evenOdd.connect(user2).bet(false, parseUnits('2.5', decimals));
 
             const lastMatch = await evenOdd.lastMatch();
             await evenOdd.play();
 
             const currentMatch = await evenOdd.matchList(lastMatch);
             const isOdd = currentMatch.isOdd;
-            let balanceOfUser1 = ethers.utils.parseUnits('47.5', decimals);
-            let balanceOfUser2 = ethers.utils.parseUnits('47.5', decimals);
+            let balanceOfUser1 = parseUnits('47.5', decimals);
+            let balanceOfUser2 = parseUnits('47.5', decimals);
 
             if (isOdd) {
-                balanceOfUser1 = balanceOfUser1.add(ethers.utils.parseUnits('5', decimals));
+                balanceOfUser1 = balanceOfUser1.add(parseUnits('5', decimals));
                 await expect(evenOdd.connect(user1).withdraw(lastMatch))
                     .to.emit(evenOdd, 'WithDrawn')
-                    .withArgs(user1.address, lastMatch, ethers.utils.parseUnits('5', decimals));
+                    .withArgs(user1.address, lastMatch, parseUnits('5', decimals));
             } else {
-                balanceOfUser2 = balanceOfUser2.add(ethers.utils.parseUnits('5', decimals));
+                balanceOfUser2 = balanceOfUser2.add(parseUnits('5', decimals));
                 await expect(evenOdd.connect(user2).withdraw(lastMatch))
                     .to.emit(evenOdd, 'WithDrawn')
-                    .withArgs(user2.address, lastMatch, ethers.utils.parseUnits('5', decimals));
+                    .withArgs(user2.address, lastMatch, parseUnits('5', decimals));
             }
 
             expect(await cash.balanceOf(user1.address)).to.equal(balanceOfUser1);

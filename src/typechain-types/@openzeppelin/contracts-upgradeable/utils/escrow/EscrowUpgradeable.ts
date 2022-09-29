@@ -2,356 +2,256 @@
 /* tslint:disable */
 /* eslint-disable */
 import type {
-  BaseContract,
-  BigNumber,
-  BytesLike,
-  CallOverrides,
-  ContractTransaction,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  Signer,
-  utils,
-} from "ethers";
-import type {
-  FunctionFragment,
-  Result,
-  EventFragment,
-} from "@ethersproject/abi";
-import type { Listener, Provider } from "@ethersproject/providers";
-import type {
-  TypedEventFilter,
-  TypedEvent,
-  TypedListener,
-  OnEvent,
-  PromiseOrValue,
-} from "../../../../common";
+    BaseContract,
+    BigNumber,
+    BytesLike,
+    CallOverrides,
+    ContractTransaction,
+    Overrides,
+    PayableOverrides,
+    PopulatedTransaction,
+    Signer,
+    utils,
+} from 'ethers';
+import type { FunctionFragment, Result, EventFragment } from '@ethersproject/abi';
+import type { Listener, Provider } from '@ethersproject/providers';
+import type { TypedEventFilter, TypedEvent, TypedListener, OnEvent, PromiseOrValue } from '../../../../common';
 
 export interface EscrowUpgradeableInterface extends utils.Interface {
-  functions: {
-    "deposit(address)": FunctionFragment;
-    "depositsOf(address)": FunctionFragment;
-    "initialize()": FunctionFragment;
-    "owner()": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
-    "withdraw(address)": FunctionFragment;
-  };
+    functions: {
+        'deposit(address)': FunctionFragment;
+        'depositsOf(address)': FunctionFragment;
+        'initialize()': FunctionFragment;
+        'owner()': FunctionFragment;
+        'renounceOwnership()': FunctionFragment;
+        'transferOwnership(address)': FunctionFragment;
+        'withdraw(address)': FunctionFragment;
+    };
 
-  getFunction(
-    nameOrSignatureOrTopic:
-      | "deposit"
-      | "depositsOf"
-      | "initialize"
-      | "owner"
-      | "renounceOwnership"
-      | "transferOwnership"
-      | "withdraw"
-  ): FunctionFragment;
+    getFunction(
+        nameOrSignatureOrTopic:
+            | 'deposit'
+            | 'depositsOf'
+            | 'initialize'
+            | 'owner'
+            | 'renounceOwnership'
+            | 'transferOwnership'
+            | 'withdraw'
+    ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "deposit",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "depositsOf",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdraw",
-    values: [PromiseOrValue<string>]
-  ): string;
+    encodeFunctionData(functionFragment: 'deposit', values: [PromiseOrValue<string>]): string;
+    encodeFunctionData(functionFragment: 'depositsOf', values: [PromiseOrValue<string>]): string;
+    encodeFunctionData(functionFragment: 'initialize', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string;
+    encodeFunctionData(functionFragment: 'transferOwnership', values: [PromiseOrValue<string>]): string;
+    encodeFunctionData(functionFragment: 'withdraw', values: [PromiseOrValue<string>]): string;
 
-  decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "depositsOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'deposit', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'depositsOf', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'withdraw', data: BytesLike): Result;
 
-  events: {
-    "Deposited(address,uint256)": EventFragment;
-    "Initialized(uint8)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
-    "Withdrawn(address,uint256)": EventFragment;
-  };
+    events: {
+        'Deposited(address,uint256)': EventFragment;
+        'Initialized(uint8)': EventFragment;
+        'OwnershipTransferred(address,address)': EventFragment;
+        'Withdrawn(address,uint256)': EventFragment;
+    };
 
-  getEvent(nameOrSignatureOrTopic: "Deposited"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Withdrawn"): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Deposited'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Initialized'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'OwnershipTransferred'): EventFragment;
+    getEvent(nameOrSignatureOrTopic: 'Withdrawn'): EventFragment;
 }
 
 export interface DepositedEventObject {
-  payee: string;
-  weiAmount: BigNumber;
+    payee: string;
+    weiAmount: BigNumber;
 }
-export type DepositedEvent = TypedEvent<
-  [string, BigNumber],
-  DepositedEventObject
->;
+export type DepositedEvent = TypedEvent<[string, BigNumber], DepositedEventObject>;
 
 export type DepositedEventFilter = TypedEventFilter<DepositedEvent>;
 
 export interface InitializedEventObject {
-  version: number;
+    version: number;
 }
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface OwnershipTransferredEventObject {
-  previousOwner: string;
-  newOwner: string;
+    previousOwner: string;
+    newOwner: string;
 }
-export type OwnershipTransferredEvent = TypedEvent<
-  [string, string],
-  OwnershipTransferredEventObject
->;
+export type OwnershipTransferredEvent = TypedEvent<[string, string], OwnershipTransferredEventObject>;
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnershipTransferredEventFilter = TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface WithdrawnEventObject {
-  payee: string;
-  weiAmount: BigNumber;
+    payee: string;
+    weiAmount: BigNumber;
 }
-export type WithdrawnEvent = TypedEvent<
-  [string, BigNumber],
-  WithdrawnEventObject
->;
+export type WithdrawnEvent = TypedEvent<[string, BigNumber], WithdrawnEventObject>;
 
 export type WithdrawnEventFilter = TypedEventFilter<WithdrawnEvent>;
 
 export interface EscrowUpgradeable extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this;
-  attach(addressOrName: string): this;
-  deployed(): Promise<this>;
+    connect(signerOrProvider: Signer | Provider | string): this;
+    attach(addressOrName: string): this;
+    deployed(): Promise<this>;
 
-  interface: EscrowUpgradeableInterface;
+    interface: EscrowUpgradeableInterface;
 
-  queryFilter<TEvent extends TypedEvent>(
-    event: TypedEventFilter<TEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>;
+    queryFilter<TEvent extends TypedEvent>(
+        event: TypedEventFilter<TEvent>,
+        fromBlockOrBlockhash?: string | number | undefined,
+        toBlock?: string | number | undefined
+    ): Promise<Array<TEvent>>;
 
-  listeners<TEvent extends TypedEvent>(
-    eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>;
-  listeners(eventName?: string): Array<Listener>;
-  removeAllListeners<TEvent extends TypedEvent>(
-    eventFilter: TypedEventFilter<TEvent>
-  ): this;
-  removeAllListeners(eventName?: string): this;
-  off: OnEvent<this>;
-  on: OnEvent<this>;
-  once: OnEvent<this>;
-  removeListener: OnEvent<this>;
+    listeners<TEvent extends TypedEvent>(eventFilter?: TypedEventFilter<TEvent>): Array<TypedListener<TEvent>>;
+    listeners(eventName?: string): Array<Listener>;
+    removeAllListeners<TEvent extends TypedEvent>(eventFilter: TypedEventFilter<TEvent>): this;
+    removeAllListeners(eventName?: string): this;
+    off: OnEvent<this>;
+    on: OnEvent<this>;
+    once: OnEvent<this>;
+    removeListener: OnEvent<this>;
 
-  functions: {
+    functions: {
+        deposit(
+            payee: PromiseOrValue<string>,
+            overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+
+        depositsOf(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+        initialize(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
+
+        owner(overrides?: CallOverrides): Promise<[string]>;
+
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
+
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+
+        withdraw(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<ContractTransaction>;
+    };
+
     deposit(
-      payee: PromiseOrValue<string>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+        payee: PromiseOrValue<string>,
+        overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    depositsOf(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    depositsOf(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    withdraw(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-  };
-
-  deposit(
-    payee: PromiseOrValue<string>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  depositsOf(
-    payee: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  initialize(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  withdraw(
-    payee: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  callStatic: {
-    deposit(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    depositsOf(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    initialize(overrides?: CallOverrides): Promise<void>;
+    initialize(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+    renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<ContractTransaction>;
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+        newOwner: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     withdraw(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-  };
+        payee: PromiseOrValue<string>,
+        overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  filters: {
-    "Deposited(address,uint256)"(
-      payee?: PromiseOrValue<string> | null,
-      weiAmount?: null
-    ): DepositedEventFilter;
-    Deposited(
-      payee?: PromiseOrValue<string> | null,
-      weiAmount?: null
-    ): DepositedEventFilter;
+    callStatic: {
+        deposit(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
 
-    "Initialized(uint8)"(version?: null): InitializedEventFilter;
-    Initialized(version?: null): InitializedEventFilter;
+        depositsOf(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
+        initialize(overrides?: CallOverrides): Promise<void>;
 
-    "Withdrawn(address,uint256)"(
-      payee?: PromiseOrValue<string> | null,
-      weiAmount?: null
-    ): WithdrawnEventFilter;
-    Withdrawn(
-      payee?: PromiseOrValue<string> | null,
-      weiAmount?: null
-    ): WithdrawnEventFilter;
-  };
+        owner(overrides?: CallOverrides): Promise<string>;
 
-  estimateGas: {
-    deposit(
-      payee: PromiseOrValue<string>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    depositsOf(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+        transferOwnership(newOwner: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
 
-    initialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        withdraw(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<void>;
+    };
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+    filters: {
+        'Deposited(address,uint256)'(payee?: PromiseOrValue<string> | null, weiAmount?: null): DepositedEventFilter;
+        Deposited(payee?: PromiseOrValue<string> | null, weiAmount?: null): DepositedEventFilter;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        'Initialized(uint8)'(version?: null): InitializedEventFilter;
+        Initialized(version?: null): InitializedEventFilter;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
+        'OwnershipTransferred(address,address)'(
+            previousOwner?: PromiseOrValue<string> | null,
+            newOwner?: PromiseOrValue<string> | null
+        ): OwnershipTransferredEventFilter;
+        OwnershipTransferred(
+            previousOwner?: PromiseOrValue<string> | null,
+            newOwner?: PromiseOrValue<string> | null
+        ): OwnershipTransferredEventFilter;
 
-    withdraw(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-  };
+        'Withdrawn(address,uint256)'(payee?: PromiseOrValue<string> | null, weiAmount?: null): WithdrawnEventFilter;
+        Withdrawn(payee?: PromiseOrValue<string> | null, weiAmount?: null): WithdrawnEventFilter;
+    };
 
-  populateTransaction: {
-    deposit(
-      payee: PromiseOrValue<string>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+    estimateGas: {
+        deposit(
+            payee: PromiseOrValue<string>,
+            overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
 
-    depositsOf(
-      payee: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+        depositsOf(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<BigNumber>;
 
-    initialize(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        initialize(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+        owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
 
-    withdraw(
-      payee: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-  };
+        withdraw(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<BigNumber>;
+    };
+
+    populateTransaction: {
+        deposit(
+            payee: PromiseOrValue<string>,
+            overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+
+        depositsOf(payee: PromiseOrValue<string>, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        initialize(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<PopulatedTransaction>;
+
+        owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+        renounceOwnership(overrides?: Overrides & { from?: PromiseOrValue<string> }): Promise<PopulatedTransaction>;
+
+        transferOwnership(
+            newOwner: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+
+        withdraw(
+            payee: PromiseOrValue<string>,
+            overrides?: Overrides & { from?: PromiseOrValue<string> }
+        ): Promise<PopulatedTransaction>;
+    };
 }
