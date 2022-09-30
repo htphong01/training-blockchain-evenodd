@@ -16,8 +16,8 @@ describe('Testing CashManager contract', () => {
 
     let decimals: number;
     before(async () => {
-        CashFactory = await ethers.getContractFactory('Cash');
-        CashManagerFactory = await ethers.getContractFactory('CashManager');
+        CashFactory = (await ethers.getContractFactory('Cash')) as Cash__factory;
+        CashManagerFactory = (await ethers.getContractFactory('CashManager')) as CashManager__factory;
     });
 
     beforeEach(async () => {
@@ -58,7 +58,7 @@ describe('Testing CashManager contract', () => {
             expect(cashManager.address).to.equal(await cash.owner());
         });
 
-        it('[OK]: User buy cash successfully', async () => {
+        it.only('[OK]: User buy cash successfully', async () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
 
             await cashManager.connect(user).buy({ value: parseUnits('1', decimals) });
@@ -80,6 +80,9 @@ describe('Testing CashManager contract', () => {
                     value: parseUnits('0.001', decimals),
                 })
             ).to.changeTokenBalance(cash, user.address, parseUnits('0.001', decimals));
+
+            const balance = await cash.balanceOf(user.address);
+            console.log('balance', ethers.utils.formatUnits(balance, decimals));
         });
     });
 

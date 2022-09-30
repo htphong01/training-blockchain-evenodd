@@ -1,6 +1,5 @@
-import { HardhatUserConfig } from 'hardhat/config';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { config as dotEnvConfig } from "dotenv";
+dotEnvConfig();
 import '@nomicfoundation/hardhat-toolbox';
 import '@nomicfoundation/hardhat-chai-matchers';
 import '@nomicfoundation/hardhat-network-helpers';
@@ -19,7 +18,9 @@ import '@nomiclabs/hardhat-etherscan';
  * Used for checking coverage of test case
  */
 import 'solidity-coverage';
-require('dotenv').config();
+import { HardhatUserConfig } from 'hardhat/config';
+
+console.log(process.env.DEPLOY_ACCOUNT)
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const config: HardhatUserConfig = {

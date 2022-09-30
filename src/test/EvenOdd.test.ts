@@ -38,11 +38,11 @@ describe('Test EvenOdd Contract', () => {
     let pricePerTime: BigNumber;
 
     before(async () => {
-        CashFactory = await ethers.getContractFactory('Cash');
-        CashManagerFactory = await ethers.getContractFactory('CashManager');
-        TicketFactory = await ethers.getContractFactory('Ticket');
-        TicketManagerFactory = await ethers.getContractFactory('TicketManager');
-        EvenOddFactory = await ethers.getContractFactory('EvenOdd');
+        CashFactory = (await ethers.getContractFactory('Cash')) as Cash__factory;
+        CashManagerFactory = (await ethers.getContractFactory('CashManager')) as CashManager__factory;
+        TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory;
+        TicketManagerFactory = (await ethers.getContractFactory('TicketManager')) as TicketManager__factory;
+        EvenOddFactory = (await ethers.getContractFactory('EvenOdd')) as EvenOdd__factory;
     });
 
     beforeEach(async () => {
