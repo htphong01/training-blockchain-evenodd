@@ -20,8 +20,6 @@ import '@nomiclabs/hardhat-etherscan';
 import 'solidity-coverage';
 import { HardhatUserConfig } from 'hardhat/config';
 
-console.log(process.env.DEPLOY_ACCOUNT)
-
 /** @type import('hardhat/config').HardhatUserConfig */
 const config: HardhatUserConfig = {
     defaultNetwork: 'hardhat',

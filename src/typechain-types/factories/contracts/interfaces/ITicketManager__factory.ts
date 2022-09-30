@@ -2,108 +2,114 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from 'ethers';
-import type { Provider } from '@ethersproject/providers';
-import type { ITicketManager, ITicketManagerInterface } from '../../../contracts/interfaces/ITicketManager';
+import { Contract, Signer, utils } from "ethers";
+import type { Provider } from "@ethersproject/providers";
+import type {
+  ITicketManager,
+  ITicketManagerInterface,
+} from "../../../contracts/interfaces/ITicketManager";
 
 const _abi = [
-    {
-        inputs: [
-            {
-                internalType: 'uint256',
-                name: '_times',
-                type: 'uint256',
-            },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_times",
+        type: "uint256",
+      },
+    ],
+    name: "buy",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_times",
+        type: "uint256",
+      },
+    ],
+    name: "extendTicket",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_account",
+        type: "address",
+      },
+    ],
+    name: "getTicketOf",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "ticketId",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "times",
+            type: "uint256",
+          },
         ],
-        name: 'buy',
-        outputs: [],
-        stateMutability: 'payable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'uint256',
-                name: '_times',
-                type: 'uint256',
-            },
-        ],
-        name: 'extendTicket',
-        outputs: [],
-        stateMutability: 'payable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address',
-                name: '_account',
-                type: 'address',
-            },
-        ],
-        name: 'getTicketOf',
-        outputs: [
-            {
-                components: [
-                    {
-                        internalType: 'uint256',
-                        name: 'ticketId',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'times',
-                        type: 'uint256',
-                    },
-                ],
-                internalType: 'struct UserTicket',
-                name: '',
-                type: 'tuple',
-            },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'address',
-                name: '_account',
-                type: 'address',
-            },
-        ],
-        name: 'subtractTimes',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'bytes4',
-                name: 'interfaceId',
-                type: 'bytes4',
-            },
-        ],
-        name: 'supportsInterface',
-        outputs: [
-            {
-                internalType: 'bool',
-                name: '',
-                type: 'bool',
-            },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
+        internalType: "struct UserTicket",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_account",
+        type: "address",
+      },
+    ],
+    name: "subtractTimes",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
 
 export class ITicketManager__factory {
-    static readonly abi = _abi;
-    static createInterface(): ITicketManagerInterface {
-        return new utils.Interface(_abi) as ITicketManagerInterface;
-    }
-    static connect(address: string, signerOrProvider: Signer | Provider): ITicketManager {
-        return new Contract(address, _abi, signerOrProvider) as ITicketManager;
-    }
+  static readonly abi = _abi;
+  static createInterface(): ITicketManagerInterface {
+    return new utils.Interface(_abi) as ITicketManagerInterface;
+  }
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): ITicketManager {
+    return new Contract(address, _abi, signerOrProvider) as ITicketManager;
+  }
 }

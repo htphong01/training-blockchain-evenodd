@@ -6,7 +6,7 @@ import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import './interfaces/ICash.sol';
 
-contract Cash is ERC165Upgradeable, ERC20Upgradeable, OwnableUpgradeable, ICash {
+contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash {
 
     event Minted(address indexed _account, uint256 _amount);
     event Burned(address indexed _account, uint256 _amount);
