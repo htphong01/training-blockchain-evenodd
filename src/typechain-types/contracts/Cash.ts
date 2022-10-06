@@ -35,7 +35,6 @@ export interface CashInterface extends utils.Interface {
     "burn(address,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
-    "getDecimals()": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
     "initialize()": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
@@ -58,7 +57,6 @@ export interface CashInterface extends utils.Interface {
       | "burn"
       | "decimals"
       | "decreaseAllowance"
-      | "getDecimals"
       | "increaseAllowance"
       | "initialize"
       | "mint"
@@ -93,10 +91,6 @@ export interface CashInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "decreaseAllowance",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getDecimals",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "increaseAllowance",
@@ -149,10 +143,6 @@ export interface CashInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getDecimals",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -320,8 +310,6 @@ export interface Cash extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getDecimals(overrides?: CallOverrides): Promise<[number]>;
-
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -405,8 +393,6 @@ export interface Cash extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getDecimals(overrides?: CallOverrides): Promise<number>;
-
   increaseAllowance(
     spender: PromiseOrValue<string>,
     addedValue: PromiseOrValue<BigNumberish>,
@@ -489,8 +475,6 @@ export interface Cash extends BaseContract {
       subtractedValue: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    getDecimals(overrides?: CallOverrides): Promise<number>;
 
     increaseAllowance(
       spender: PromiseOrValue<string>,
@@ -626,8 +610,6 @@ export interface Cash extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getDecimals(overrides?: CallOverrides): Promise<BigNumber>;
-
     increaseAllowance(
       spender: PromiseOrValue<string>,
       addedValue: PromiseOrValue<BigNumberish>,
@@ -711,8 +693,6 @@ export interface Cash extends BaseContract {
       subtractedValue: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    getDecimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     increaseAllowance(
       spender: PromiseOrValue<string>,

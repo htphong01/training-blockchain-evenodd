@@ -147,7 +147,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "getDecimals",
+    name: "decimals",
     outputs: [
       {
         internalType: "uint8",

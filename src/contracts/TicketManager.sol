@@ -75,7 +75,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
         ticket = _ticketAddress;
         cash = _cashAddress;
-        pricePerTime = 10 ** cash.getDecimals() / 2;
+        pricePerTime = 10 ** cash.decimals() / 2;
     }
 
     /**

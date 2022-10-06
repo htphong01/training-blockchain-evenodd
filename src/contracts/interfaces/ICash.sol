@@ -9,5 +9,5 @@ interface ICash is IERC165Upgradeable, IERC20Upgradeable {
 
     function burn(address userAddress, uint256 amount) external;
 
-    function getDecimals() external view returns(uint8);
+    function decimals() external view returns (uint8);
 }

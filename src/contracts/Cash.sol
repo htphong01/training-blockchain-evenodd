@@ -39,7 +39,7 @@ contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash 
     /**
      * @dev Override function `decimals` to return new decimals
      */
-    function decimals() public view virtual override returns (uint8) {
+    function decimals() public view virtual override(ERC20Upgradeable, ICash) returns (uint8) {
         return 6;
     }
 
@@ -63,13 +63,5 @@ contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash 
         _burn(_account, _amount);
 
         emit Burned(_account, _amount);
-    }
-
-    /**
-     * @dev Used to get decimals of ERC20
-     * @return decimals
-     */
-    function getDecimals() external view returns(uint8) {
-        return decimals();
     }
 }

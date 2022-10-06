@@ -33,7 +33,7 @@ export interface ICashInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(address,uint256)": FunctionFragment;
-    "getDecimals()": FunctionFragment;
+    "decimals()": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "totalSupply()": FunctionFragment;
@@ -47,7 +47,7 @@ export interface ICashInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "burn"
-      | "getDecimals"
+      | "decimals"
       | "mint"
       | "supportsInterface"
       | "totalSupply"
@@ -71,10 +71,7 @@ export interface ICashInterface extends utils.Interface {
     functionFragment: "burn",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "getDecimals",
-    values?: undefined
-  ): string;
+  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
@@ -104,10 +101,7 @@ export interface ICashInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getDecimals",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
@@ -206,7 +200,7 @@ export interface ICash extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getDecimals(overrides?: CallOverrides): Promise<[number]>;
+    decimals(overrides?: CallOverrides): Promise<[number]>;
 
     mint(
       userAddress: PromiseOrValue<string>,
@@ -258,7 +252,7 @@ export interface ICash extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getDecimals(overrides?: CallOverrides): Promise<number>;
+  decimals(overrides?: CallOverrides): Promise<number>;
 
   mint(
     userAddress: PromiseOrValue<string>,
@@ -310,7 +304,7 @@ export interface ICash extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getDecimals(overrides?: CallOverrides): Promise<number>;
+    decimals(overrides?: CallOverrides): Promise<number>;
 
     mint(
       userAddress: PromiseOrValue<string>,
@@ -387,7 +381,7 @@ export interface ICash extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getDecimals(overrides?: CallOverrides): Promise<BigNumber>;
+    decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
       userAddress: PromiseOrValue<string>,
@@ -440,7 +434,7 @@ export interface ICash extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getDecimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     mint(
       userAddress: PromiseOrValue<string>,

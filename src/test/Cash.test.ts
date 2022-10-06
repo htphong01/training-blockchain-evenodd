@@ -58,7 +58,7 @@ describe('Testing CashManager contract', () => {
             expect(cashManager.address).to.equal(await cash.owner());
         });
 
-        it.only('[OK]: User buy cash successfully', async () => {
+        it('[OK]: User buy cash successfully', async () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
 
             await cashManager.connect(user).buy({ value: parseUnits('1', decimals) });

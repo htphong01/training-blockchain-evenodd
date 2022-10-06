@@ -21,6 +21,7 @@ describe('Test EvenOdd Contract', () => {
     let owner: SignerWithAddress;
     let user1: SignerWithAddress;
     let user2: SignerWithAddress;
+    let user3: SignerWithAddress;
 
     let CashFactory: Cash__factory;
     let CashManagerFactory: CashManager__factory;
@@ -46,7 +47,7 @@ describe('Test EvenOdd Contract', () => {
     });
 
     beforeEach(async () => {
-        [owner, user1, user2] = await ethers.getSigners();
+        [owner, user1, user2, user3] = await ethers.getSigners();
 
         cash = (await upgrades.deployProxy(CashFactory)) as Cash;
         await cash.deployed();
