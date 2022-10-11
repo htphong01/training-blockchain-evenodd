@@ -32,8 +32,8 @@ const config: HardhatUserConfig = {
             url: process.env.ROPSTEN_URL,
             accounts: [process.env.DEPLOY_ACCOUNT!],
         },
-        rinkeby: {
-            url: process.env.RINKEBY_URL,
+        rinkeyby: {
+            url: process.env.RINKEYBY_URL,
             accounts: [process.env.DEPLOY_ACCOUNT!],
         },
         bsc: {
@@ -43,7 +43,7 @@ const config: HardhatUserConfig = {
         },
     },
     etherscan: {
-        apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: process.env.BSC_API_KEY,
     },
     solidity: {
         version: '0.8.9',

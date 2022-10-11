@@ -1,5 +1,5 @@
 import hre from 'hardhat';
-import { cashImpl, ticketImpl, cashManagerImpl, ticketManagerImpl, evenOddImpl } from '../deployed/ropsten_1664512387315.json';
+import { cashImpl, ticketImpl, cashManagerImpl, ticketManagerImpl, evenOddImpl } from '../deployed/bsc_1665414116058.json';
 
 async function main() {
     await hre.run('verify:verify', {
