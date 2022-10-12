@@ -6,4 +6,6 @@ interface ICashManager is IERC165Upgradeable {
     function buy() external payable; 
 
     function withdraw(uint256 amount) external;
+
+    function ethToCash() external returns (uint256);
 }

@@ -4,6 +4,7 @@ pragma solidity >=0.8.9;
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol';
 import './interfaces/ITicket.sol';
 import './interfaces/ICash.sol';
 import './interfaces/ITicketManager.sol';
@@ -33,6 +34,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
     event SubTractedTimes(address indexed _account, uint256 _remainTimes);
     event ExtendedTicket(address indexed _account, uint256 _times);
     event SetPricePerTime(uint256 indexed _price);
+    event WithDrawn(address indexed _account, uint256 indexed _amount);
 
     /**
      * @dev Modifier used to check the msg.value
@@ -75,7 +77,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
         ticket = _ticketAddress;
         cash = _cashAddress;
-        pricePerTime = 10 ** cash.decimals() / 2;
+        pricePerTime = 10 ** cash.decimals();
     }
 
     /**
@@ -102,8 +104,9 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
         UserTicket memory newUserTicket = UserTicket(lastTicket, _times);
         ticketOf[_msgSender()] = newUserTicket;
+        AddressUpgradeable.sendValue(payable(owner()), msg.value);
 
-        emit Bought(_msgSender(), _times, lastTicket);
+        emit Bought(_msgSender(), _times, lastTicket);  
     }
 
     /**

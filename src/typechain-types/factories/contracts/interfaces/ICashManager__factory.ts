@@ -18,6 +18,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "ethToCash",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "bytes4",

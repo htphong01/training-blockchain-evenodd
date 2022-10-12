@@ -32,6 +32,7 @@ contract Ticket is OwnableUpgradeable, ERC721Upgradeable, ITicket {
      * @param _tokenId Ticket's id of user
      */ 
     function mint(address _to, uint256 _tokenId) external onlyOwner {
+        require(_to != address(0), "Invalid address!");
         _safeMint(_to, _tokenId);
 
         emit Minted(_to, _tokenId);

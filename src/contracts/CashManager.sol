@@ -16,9 +16,11 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
      */
     ICash public cash;
 
+    uint256 public ethToCash;
+
     event Bought(address indexed _account, uint256 _amount);
     event Withdrawn(address indexed _account, uint256 _amount);
-    event SetPricePerCash(uint256 indexed _rate);
+    event SetETHToCash(uint256 indexed _amount);
 
     /**
      * @dev Replace for constructor function in order to be upgradeable
@@ -34,6 +36,7 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
             'Invalid Cash contract'
         );
         cash = _cashAddress;
+        ethToCash = 2;
     }
 
     /**
@@ -54,9 +57,10 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
      * Emit {Bought} events
      */
     function buy() external payable {
-        cash.mint(_msgSender(), msg.value);
+        uint256 _amount = msg.value * (10 ** (cash.decimals() + ethToCash)) / (10 ** 18);
+        cash.mint(_msgSender(), _amount);
         
-        emit Bought(_msgSender(), msg.value);
+        emit Bought(_msgSender(), _amount);
     }
 
     /**
@@ -65,9 +69,21 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
      * emit {Withdrawn} events
      */
     function withdraw(uint256 _amount) external nonReentrant {
+        uint256 refund = _amount * (10 ** 18) / (10 ** (cash.decimals() + ethToCash));
         cash.burn(_msgSender(), _amount);
-        AddressUpgradeable.sendValue(payable(_msgSender()), _amount);
+        AddressUpgradeable.sendValue(payable(_msgSender()), refund);
 
         emit Withdrawn(_msgSender(), _amount);
+    }
+
+    /**
+     * @dev Set ETH to cash
+     * @param _amount - Number of cashes that 1 ETH equal to
+     * emit {SetETHToCash} events
+     */
+    function setETHToCash(uint256 _amount) external onlyOwner {
+        require(_amount > 0 && _amount <= 18, 'Invalid amount!');
+        ethToCash = _amount;
+        emit SetETHToCash(_amount);
     }
 }

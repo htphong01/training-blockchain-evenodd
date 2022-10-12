@@ -32,9 +32,11 @@ export interface CashManagerInterface extends utils.Interface {
   functions: {
     "buy()": FunctionFragment;
     "cash()": FunctionFragment;
+    "ethToCash()": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setETHToCash(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
@@ -44,9 +46,11 @@ export interface CashManagerInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "buy"
       | "cash"
+      | "ethToCash"
       | "initialize"
       | "owner"
       | "renounceOwnership"
+      | "setETHToCash"
       | "supportsInterface"
       | "transferOwnership"
       | "withdraw"
@@ -54,6 +58,7 @@ export interface CashManagerInterface extends utils.Interface {
 
   encodeFunctionData(functionFragment: "buy", values?: undefined): string;
   encodeFunctionData(functionFragment: "cash", values?: undefined): string;
+  encodeFunctionData(functionFragment: "ethToCash", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>]
@@ -62,6 +67,10 @@ export interface CashManagerInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setETHToCash",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -78,10 +87,15 @@ export interface CashManagerInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "buy", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "cash", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "ethToCash", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setETHToCash",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -98,14 +112,14 @@ export interface CashManagerInterface extends utils.Interface {
     "Bought(address,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
-    "SetPricePerCash(uint256)": EventFragment;
+    "SetETHToCash(uint256)": EventFragment;
     "Withdrawn(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bought"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SetPricePerCash"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SetETHToCash"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawn"): EventFragment;
 }
 
@@ -136,15 +150,15 @@ export type OwnershipTransferredEvent = TypedEvent<
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
 
-export interface SetPricePerCashEventObject {
-  _rate: BigNumber;
+export interface SetETHToCashEventObject {
+  _amount: BigNumber;
 }
-export type SetPricePerCashEvent = TypedEvent<
+export type SetETHToCashEvent = TypedEvent<
   [BigNumber],
-  SetPricePerCashEventObject
+  SetETHToCashEventObject
 >;
 
-export type SetPricePerCashEventFilter = TypedEventFilter<SetPricePerCashEvent>;
+export type SetETHToCashEventFilter = TypedEventFilter<SetETHToCashEvent>;
 
 export interface WithdrawnEventObject {
   _account: string;
@@ -190,6 +204,8 @@ export interface CashManager extends BaseContract {
 
     cash(overrides?: CallOverrides): Promise<[string]>;
 
+    ethToCash(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     initialize(
       _cashAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -198,6 +214,11 @@ export interface CashManager extends BaseContract {
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setETHToCash(
+      _amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -223,6 +244,8 @@ export interface CashManager extends BaseContract {
 
   cash(overrides?: CallOverrides): Promise<string>;
 
+  ethToCash(overrides?: CallOverrides): Promise<BigNumber>;
+
   initialize(
     _cashAddress: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -231,6 +254,11 @@ export interface CashManager extends BaseContract {
   owner(overrides?: CallOverrides): Promise<string>;
 
   renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setETHToCash(
+    _amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -254,6 +282,8 @@ export interface CashManager extends BaseContract {
 
     cash(overrides?: CallOverrides): Promise<string>;
 
+    ethToCash(overrides?: CallOverrides): Promise<BigNumber>;
+
     initialize(
       _cashAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -262,6 +292,11 @@ export interface CashManager extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    setETHToCash(
+      _amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
@@ -301,12 +336,12 @@ export interface CashManager extends BaseContract {
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
 
-    "SetPricePerCash(uint256)"(
-      _rate?: PromiseOrValue<BigNumberish> | null
-    ): SetPricePerCashEventFilter;
-    SetPricePerCash(
-      _rate?: PromiseOrValue<BigNumberish> | null
-    ): SetPricePerCashEventFilter;
+    "SetETHToCash(uint256)"(
+      _amount?: PromiseOrValue<BigNumberish> | null
+    ): SetETHToCashEventFilter;
+    SetETHToCash(
+      _amount?: PromiseOrValue<BigNumberish> | null
+    ): SetETHToCashEventFilter;
 
     "Withdrawn(address,uint256)"(
       _account?: PromiseOrValue<string> | null,
@@ -325,6 +360,8 @@ export interface CashManager extends BaseContract {
 
     cash(overrides?: CallOverrides): Promise<BigNumber>;
 
+    ethToCash(overrides?: CallOverrides): Promise<BigNumber>;
+
     initialize(
       _cashAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -333,6 +370,11 @@ export interface CashManager extends BaseContract {
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setETHToCash(
+      _amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -359,6 +401,8 @@ export interface CashManager extends BaseContract {
 
     cash(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    ethToCash(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     initialize(
       _cashAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -367,6 +411,11 @@ export interface CashManager extends BaseContract {
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setETHToCash(
+      _amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ethers, upgrades } from 'hardhat';
-import { parseUnits } from 'ethers/lib/utils';
+import { parseUnits, parseEther } from 'ethers/lib/utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Cash__factory, CashManager__factory, Cash, CashManager } from '../typechain-types';
 
@@ -15,6 +15,7 @@ describe('Testing CashManager contract', () => {
     let cashManager: CashManager;
 
     let decimals: number;
+    let ethToCash: number;
     before(async () => {
         CashFactory = (await ethers.getContractFactory('Cash')) as Cash__factory;
         CashManagerFactory = (await ethers.getContractFactory('CashManager')) as CashManager__factory;
@@ -34,13 +35,14 @@ describe('Testing CashManager contract', () => {
         await cashManager.deployed();
 
         decimals = await cash.decimals();
+        ethToCash = (await cashManager.ethToCash()).toNumber();
     });
 
     describe('Testing `buy` function', () => {
         it('[Fail]: User buy cash but had not set Owner', async () => {
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('15', decimals),
+                    value: parseEther('1'),
                 })
             ).to.be.revertedWith('Ownable: caller is not the owner');
         });
@@ -48,7 +50,7 @@ describe('Testing CashManager contract', () => {
         it('[Fail]: Set new owner so old owner can not calling mint function ', async () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
 
-            await expect(cash.connect(owner).mint(user.address, parseUnits('1', decimals))).to.be.revertedWith(
+            await expect(cash.connect(owner).mint(user.address, parseEther('1'))).to.be.revertedWith(
                 'Ownable: caller is not the owner'
             );
         });
@@ -61,28 +63,22 @@ describe('Testing CashManager contract', () => {
         it('[OK]: User buy cash successfully', async () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
 
-            await cashManager.connect(user).buy({ value: parseUnits('1', decimals) });
+            await cashManager.connect(user).buy({ value: parseEther('1') });
 
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('100', decimals),
+                    value: parseEther('1'),
                 })
             )
-                .to.changeEtherBalances(
-                    [cashManager.address, user.address],
-                    [parseUnits('100', decimals), parseUnits('-100', decimals)]
-                )
+                .to.changeEtherBalances([cashManager.address, user.address], [parseEther('1'), parseEther('-1')])
                 .to.emit(cashManager, 'Bought')
-                .withArgs(user.address, parseUnits('100', decimals));
+                .withArgs(user.address, parseUnits(`${10 ** ethToCash}`, decimals));
 
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('0.001', decimals),
+                    value: parseEther('1'),
                 })
-            ).to.changeTokenBalance(cash, user.address, parseUnits('0.001', decimals));
-
-            const balance = await cash.balanceOf(user.address);
-            console.log('balance', ethers.utils.formatUnits(balance, decimals));
+            ).to.changeTokenBalance(cash, user.address, parseUnits(`${10 ** ethToCash}`, decimals));
         });
     });
 
@@ -90,7 +86,7 @@ describe('Testing CashManager contract', () => {
         it('[Fail]: Balance of user is not enough', async () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(cashManager.connect(user).withdraw(parseUnits('0.5', decimals))).to.be.revertedWith(
-                'ERC20: burn amount exceeds balance'
+                'Exceeds balance!'
             );
         });
 
@@ -98,14 +94,14 @@ describe('Testing CashManager contract', () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('100', decimals),
+                    value: parseEther('1'),
                 })
             )
                 .to.emit(cashManager, 'Bought')
-                .withArgs(user.address, parseUnits('100', decimals));
+                .withArgs(user.address, parseUnits(`${10 ** ethToCash}`, decimals));
 
             await expect(cashManager.connect(user).withdraw(parseUnits('200', decimals))).to.be.revertedWith(
-                'ERC20: burn amount exceeds balance'
+                'Exceeds balance!'
             );
         });
 
@@ -113,11 +109,11 @@ describe('Testing CashManager contract', () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('100', decimals),
+                    value: parseEther('1'),
                 })
             )
                 .to.emit(cashManager, 'Bought')
-                .withArgs(user.address, parseUnits('100', decimals));
+                .withArgs(user.address, parseUnits(`${10 ** ethToCash}`, decimals));
 
             await expect(cashManager.connect(user).withdraw(0)).to.be.revertedWith('Invalid value!');
         });
@@ -126,11 +122,11 @@ describe('Testing CashManager contract', () => {
             await cash.connect(owner).transferOwnership(cashManager.address);
             await expect(
                 cashManager.connect(user).buy({
-                    value: parseUnits('10', decimals),
+                    value: parseEther('0.1'),
                 })
             )
                 .to.emit(cashManager, 'Bought')
-                .withArgs(user.address, parseUnits('10', decimals));
+                .withArgs(user.address, parseUnits(`${0.1 * 10 ** ethToCash}`, decimals));
 
             await expect(cashManager.connect(user).withdraw(parseUnits('5', decimals)))
                 .to.changeTokenBalance(cash, user.address, parseUnits('-5', decimals))
@@ -138,9 +134,31 @@ describe('Testing CashManager contract', () => {
                 .withArgs(user.address, parseUnits('5', decimals));
 
             await expect(cashManager.connect(user).withdraw(parseUnits('5', decimals)))
-                .to.changeEtherBalance(user.address, parseUnits('5', decimals))
+                .to.changeEtherBalance(user.address, parseEther(`${5 / 10 ** ethToCash}`))
                 .to.emit(cashManager, 'Withdrawn')
                 .withArgs(user.address, parseUnits('5', decimals));
         });
+    });
+
+    describe('Testing `setETHToCash` function', () => {
+        it('[Fail] Caller is not owner', async () => {
+            await expect(cashManager.connect(user).setETHToCash(1)).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            );
+        });
+
+        it('[Fail] Amount is not valid', async () => {
+            await cash.connect(owner).transferOwnership(cashManager.address);
+            await expect(cashManager.connect(owner).setETHToCash(20)).to.be.revertedWith(
+                'Invalid amount!'
+            );
+        });
+
+        it('[OK] Set new amount successfully', async () => {
+            await cash.connect(owner).transferOwnership(cashManager.address);
+            await expect(cashManager.connect(owner).setETHToCash(5))
+                .emit(cashManager, 'SetETHToCash')
+                .withArgs(5);
+        })
     });
 });

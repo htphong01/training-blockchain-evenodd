@@ -13,7 +13,8 @@
         "deploy-local": "npx hardhat run src/scripts/deploy.ts --network localhost",
         "deploy-rinkeyby": "npx hardhat run src/scripts/deploy.ts --network rinkeyby",
         "verify-rinkeyby": "npx hardhat run src/scripts/verify.ts --network rinkeyby",
-        "deploy-bsc": "npx hardhat run src/scripts/deploy.ts --network bsc",
+        "deploy-verify-bsc": "npx hardhat run src/scripts/deployAndVerify.ts --network bsc",
+        "upgrade-verify-bsc": "npx hardhat run src/scripts/upgradeAndVerify.ts --network bsc",
         "verify-bsc": "npx hardhat run src/scripts/verify.ts --network bsc"
     },
     "author": "",

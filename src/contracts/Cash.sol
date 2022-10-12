@@ -15,7 +15,8 @@ contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash 
      * @dev Modifier to check that the account's address is Zero address
      * @param _value Amount to check
      */
-    modifier validValue(uint256 _value) {
+    modifier validAccountAndValue(address _account, uint256 _value) {
+        require(_account != address(0), 'Invalid account!');
         require(_value > 0, 'Invalid value!');
         _;
     }
@@ -48,7 +49,7 @@ contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash 
      * @param _account Address of user's account
      * @param _amount Amount of token that user will receive
      */
-    function mint(address _account, uint256 _amount) external onlyOwner validValue(_amount) {
+    function mint(address _account, uint256 _amount) external onlyOwner validAccountAndValue(_account, _amount) {
         _mint(_account, _amount);
 
         emit Minted(_account, _amount);
@@ -59,7 +60,8 @@ contract Cash is OwnableUpgradeable, ERC165Upgradeable, ERC20Upgradeable, ICash 
      * @param _account Address of user's account
      * @param _amount Amount of token that user will withdraw
      */
-    function burn(address _account, uint256 _amount) external onlyOwner validValue(_amount) {
+    function burn(address _account, uint256 _amount) external onlyOwner validAccountAndValue(_account, _amount) {
+        require(balanceOf(_account) >= _amount, 'Exceeds balance!');
         _burn(_account, _amount);
 
         emit Burned(_account, _amount);

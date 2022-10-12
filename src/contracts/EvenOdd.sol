@@ -114,9 +114,10 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * Emit {SuppliedToken} events
      */
     function supplyToken() external payable onlyOwner {
+        uint256 _amount = msg.value * 10 ** cashManager.ethToCash() / 10**18;
         cashManager.buy{value: msg.value}();
 
-        emit SuppliedToken(_msgSender(), msg.value);
+        emit SuppliedToken(_msgSender(), _amount);
     }
 
     /**
@@ -168,7 +169,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * emit {Played} events
      */
     function play() external onlyOwner {
-        uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) - block.number / 3;
+        uint256 roll1 = ((block.timestamp % 15) + block.difficulty * 2) + block.number / 3;
         uint256 roll2 = (((block.timestamp / block.chainid + 5) % 23) + block.number * 2 + block.difficulty) / 4;
 
         Match memory newMatch = Match({

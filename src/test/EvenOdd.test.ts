@@ -37,6 +37,7 @@ describe('Test EvenOdd Contract', () => {
 
     let decimals: number;
     let pricePerTime: BigNumber;
+    let ethToCash: number;
 
     before(async () => {
         CashFactory = (await ethers.getContractFactory('Cash')) as Cash__factory;
@@ -87,14 +88,15 @@ describe('Test EvenOdd Contract', () => {
 
         decimals = await cash.decimals();
         pricePerTime = await ticketManager.pricePerTime();
+        ethToCash = (await cashManager.ethToCash()).toNumber();
 
         await expect(
             evenOdd.supplyToken({
-                value: parseUnits('50000', decimals),
+                value: parseEther('2'),
             })
         )
             .to.emit(evenOdd, 'SuppliedToken')
-            .withArgs(owner.address, parseUnits('50000', decimals));
+            .withArgs(owner.address, 2 * 10 ** ethToCash);
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
@@ -147,7 +149,7 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('50', decimals),
+                    value: parseEther('1'),
                 });
 
                 await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
@@ -166,7 +168,7 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('10', decimals),
+                    value: parseEther('1'),
                 });
 
                 await expect(evenOdd.connect(user1).bet(false, parseUnits('0.3', decimals)))
@@ -186,7 +188,7 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('1', decimals),
+                    value: parseEther('0.001'),
                 });
 
                 await expect(evenOdd.connect(user1).bet(true, parseUnits('1.1', decimals))).to.be.revertedWith(
@@ -200,10 +202,10 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('50001', decimals),
+                    value: parseEther('2.1'),
                 });
 
-                await expect(evenOdd.connect(user1).bet(true, parseUnits('50001', decimals))).to.be.revertedWith(
+                await expect(evenOdd.connect(user1).bet(true, parseUnits(`${2.1 * 10 ** ethToCash}`, decimals))).to.be.revertedWith(
                     'Not enough to reward!'
                 );
             });
@@ -214,19 +216,19 @@ describe('Test EvenOdd Contract', () => {
                 });
 
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('30000', decimals),
+                    value: parseEther('1'),
                 });
-                await evenOdd.connect(user1).bet(true, parseUnits('30000', decimals));
+                await evenOdd.connect(user1).bet(true, parseUnits('100', decimals));
 
                 await ticketManager.connect(user2).buy(3, {
                     value: pricePerTime.mul(3),
                 });
 
                 await cashManager.connect(user2).buy({
-                    value: parseUnits('30000', decimals),
+                    value: parseEther('1.5'),
                 });
 
-                await expect(evenOdd.connect(user2).bet(true, parseUnits('30000', decimals))).to.be.revertedWith(
+                await expect(evenOdd.connect(user2).bet(true, parseUnits('150', decimals))).to.be.revertedWith(
                     'Not enough to reward!'
                 );
             });
@@ -238,7 +240,7 @@ describe('Test EvenOdd Contract', () => {
                     value: pricePerTime.mul(3),
                 });
                 await cashManager.connect(user1).buy({
-                    value: parseUnits('20', decimals),
+                    value: parseEther('1'),
                 });
 
                 await expect(evenOdd.connect(user1).bet(true, parseUnits('20', decimals)))
@@ -269,7 +271,6 @@ describe('Test EvenOdd Contract', () => {
 
     describe('Testing `play` function', () => {
         it('[Fail]: Only owner can play', async () => {
-            expect(await evenOdd.play());
             await expect(evenOdd.connect(user1).play()).to.be.revertedWith('Ownable: caller is not the owner');
         });
 
@@ -280,7 +281,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
 
             await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
@@ -301,7 +302,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
             await evenOdd.connect(user1).bet(false, parseUnits('20', decimals));
 
@@ -313,7 +314,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
             await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
 
@@ -321,7 +322,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
 
             await evenOdd.connect(user2).bet(false, parseUnits('20', decimals));
@@ -350,7 +351,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
             await evenOdd.connect(user1).bet(true, parseUnits('20', decimals));
 
@@ -358,7 +359,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('1'),
             });
             await evenOdd.connect(user2).bet(false, parseUnits('20', decimals));
 
@@ -380,7 +381,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user1).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('0.5'),
             });
             await evenOdd.connect(user1).bet(true, parseUnits('2.5', decimals));
 
@@ -388,7 +389,7 @@ describe('Test EvenOdd Contract', () => {
                 value: pricePerTime.mul(3),
             });
             await cashManager.connect(user2).buy({
-                value: parseUnits('50', decimals),
+                value: parseEther('0.5'),
             });
             await evenOdd.connect(user2).bet(false, parseUnits('2.5', decimals));
 

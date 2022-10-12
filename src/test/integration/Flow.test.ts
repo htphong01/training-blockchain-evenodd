@@ -35,6 +35,7 @@ describe('[Integration Test] Testing flow of the game', () => {
     let evenOdd: EvenOdd;
 
     let decimals: number;
+    let ethToCash: number;
     let pricePerTime: BigNumber;
     let lastMatch: BigNumber;
 
@@ -78,10 +79,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         await cash.connect(user3).approve(evenOdd.address, ethers.constants.MaxUint256);
 
         decimals = await cash.decimals();
+        ethToCash = (await cashManager.ethToCash()).toNumber();
         pricePerTime = await ticketManager.pricePerTime();
 
         await evenOdd.supplyToken({
-            value: parseUnits('50000', decimals),
+            value: parseEther('50'),
         });
     });
 
@@ -90,7 +92,7 @@ describe('[Integration Test] Testing flow of the game', () => {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user1).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         const cashBetted = parseUnits('10', decimals);
@@ -202,10 +204,11 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
+        const refund: number = balanceOfUser.toNumber() / 10 ** (decimals + ethToCash);
         if (balanceOfUser.gt(0)) {
             await expect(cashManager.connect(user1).withdraw(balanceOfUser)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [-balanceOfUser, balanceOfUser]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
@@ -213,21 +216,21 @@ describe('[Integration Test] Testing flow of the game', () => {
 
     it("Play 2 games with 3 user -> user1's ticket is expired -> extends ticket -> play 1 game with 3 users", async () => {
         await cashManager.connect(user1).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         await ticketManager.connect(user2).buy(3, {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user2).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         await ticketManager.connect(user3).buy(3, {
             value: pricePerTime.mul(3),
         });
         await cashManager.connect(user3).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         const cashBetted = parseUnits('10', decimals);
@@ -712,25 +715,28 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // withdraw token
         if (balanceOfUser1.gt(0)) {
+            const refund = balanceOfUser1.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [-balanceOfUser1, balanceOfUser1]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
 
         if (balanceOfUser2.gt(0)) {
+            const refund = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
-                [-balanceOfUser2, balanceOfUser2]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user2.address)).to.equal(0);
         }
 
         if (balanceOfUser3.gt(0)) {
+            const refund = balanceOfUser3.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [-balanceOfUser3, balanceOfUser3]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
         }
@@ -738,15 +744,15 @@ describe('[Integration Test] Testing flow of the game', () => {
 
     it('Ticket of user3 is expired -> Extends ticket -> Play 1 game with 3 users -> Ticket of user1 is expired -> Extends ticket -> User3 withdraw all token -> Play 1 game with 3 users (user3 does not have enough token to bet) -> User1 transfer to User3 -> Play 1 game with 3 users -> withdraw) ', async () => {
         await cashManager.connect(user1).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         await cashManager.connect(user2).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         await cashManager.connect(user3).buy({
-            value: parseUnits('1000', decimals),
+            value: parseEther('1'),
         });
 
         const cashBetted = parseUnits('10', decimals);
@@ -834,9 +840,10 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // User3 withdraw all tokens
         if (balanceOfUser3.gt(0)) {
+            const refund: number = balanceOfUser3.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [-balanceOfUser3, balanceOfUser3]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
             balanceOfUser3 = ethers.BigNumber.from('0');
@@ -922,25 +929,28 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // withdraw token
         if (balanceOfUser1.gt(0)) {
+            const refund: number = balanceOfUser1.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
-                [-balanceOfUser1, balanceOfUser1]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user1.address)).to.equal(0);
         }
 
         if (balanceOfUser2.gt(0)) {
+            const refund: number = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
-                [-balanceOfUser2, balanceOfUser2]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user2.address)).to.equal(0);
         }
 
         if (balanceOfUser3.gt(0)) {
+            const refund: number = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
-                [-balanceOfUser3, balanceOfUser3]
+                [parseEther(`-${refund}`), parseEther(`${refund}`)]
             );
             expect(await cash.balanceOf(user3.address)).to.equal(0);
         }

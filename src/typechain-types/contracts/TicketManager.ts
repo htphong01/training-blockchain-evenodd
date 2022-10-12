@@ -175,6 +175,7 @@ export interface TicketManagerInterface extends utils.Interface {
     "OwnershipTransferred(address,address)": EventFragment;
     "SetPricePerTime(uint256)": EventFragment;
     "SubTractedTimes(address,uint256)": EventFragment;
+    "WithDrawn(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bought"): EventFragment;
@@ -183,6 +184,7 @@ export interface TicketManagerInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetPricePerTime"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SubTractedTimes"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WithDrawn"): EventFragment;
 }
 
 export interface BoughtEventObject {
@@ -247,6 +249,17 @@ export type SubTractedTimesEvent = TypedEvent<
 >;
 
 export type SubTractedTimesEventFilter = TypedEventFilter<SubTractedTimesEvent>;
+
+export interface WithDrawnEventObject {
+  _account: string;
+  _amount: BigNumber;
+}
+export type WithDrawnEvent = TypedEvent<
+  [string, BigNumber],
+  WithDrawnEventObject
+>;
+
+export type WithDrawnEventFilter = TypedEventFilter<WithDrawnEvent>;
 
 export interface TicketManager extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -510,6 +523,15 @@ export interface TicketManager extends BaseContract {
       _account?: PromiseOrValue<string> | null,
       _remainTimes?: null
     ): SubTractedTimesEventFilter;
+
+    "WithDrawn(address,uint256)"(
+      _account?: PromiseOrValue<string> | null,
+      _amount?: PromiseOrValue<BigNumberish> | null
+    ): WithDrawnEventFilter;
+    WithDrawn(
+      _account?: PromiseOrValue<string> | null,
+      _amount?: PromiseOrValue<BigNumberish> | null
+    ): WithDrawnEventFilter;
   };
 
   estimateGas: {

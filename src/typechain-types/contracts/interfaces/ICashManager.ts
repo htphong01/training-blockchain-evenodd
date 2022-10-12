@@ -27,15 +27,21 @@ import type {
 export interface ICashManagerInterface extends utils.Interface {
   functions: {
     "buy()": FunctionFragment;
+    "ethToCash()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "buy" | "supportsInterface" | "withdraw"
+    nameOrSignatureOrTopic:
+      | "buy"
+      | "ethToCash"
+      | "supportsInterface"
+      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "buy", values?: undefined): string;
+  encodeFunctionData(functionFragment: "ethToCash", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
@@ -46,6 +52,7 @@ export interface ICashManagerInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "buy", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "ethToCash", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -86,6 +93,10 @@ export interface ICashManager extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    ethToCash(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -101,6 +112,10 @@ export interface ICashManager extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  ethToCash(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   supportsInterface(
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
@@ -113,6 +128,8 @@ export interface ICashManager extends BaseContract {
 
   callStatic: {
     buy(overrides?: CallOverrides): Promise<void>;
+
+    ethToCash(overrides?: CallOverrides): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
@@ -132,6 +149,10 @@ export interface ICashManager extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    ethToCash(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -146,6 +167,10 @@ export interface ICashManager extends BaseContract {
   populateTransaction: {
     buy(
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    ethToCash(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(
