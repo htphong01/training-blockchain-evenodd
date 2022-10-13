@@ -51,15 +51,15 @@ describe('[Integration Test] Testing flow of the game', () => {
         cash = (await upgrades.deployProxy(CashFactory)) as Cash;
         await cash.deployed();
 
+        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
+        await cashManager.deployed();
+        
         ticket = (await upgrades.deployProxy(TicketFactory)) as Ticket;
         await ticket.deployed();
 
-        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
-        await cashManager.deployed();
-
         ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [
             ticket.address,
-            cash.address,
+            cashManager.address,
         ])) as TicketManager;
         await ticketManager.deployed();
 
@@ -204,7 +204,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         expect(await cash.balanceOf(user1.address)).equal(balanceOfUser);
-        const refund: number = balanceOfUser.toNumber() / 10 ** (decimals + ethToCash);
+        const refund: number = balanceOfUser.toNumber() / (ethToCash * 10 ** decimals);
         if (balanceOfUser.gt(0)) {
             await expect(cashManager.connect(user1).withdraw(balanceOfUser)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
@@ -715,7 +715,7 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // withdraw token
         if (balanceOfUser1.gt(0)) {
-            const refund = balanceOfUser1.toNumber() / 10 ** (decimals + ethToCash);
+            const refund = balanceOfUser1.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -724,7 +724,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         if (balanceOfUser2.gt(0)) {
-            const refund = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
+            const refund = balanceOfUser2.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -733,7 +733,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         if (balanceOfUser3.gt(0)) {
-            const refund = balanceOfUser3.toNumber() / 10 ** (decimals + ethToCash);
+            const refund = balanceOfUser3.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -840,7 +840,7 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // User3 withdraw all tokens
         if (balanceOfUser3.gt(0)) {
-            const refund: number = balanceOfUser3.toNumber() / 10 ** (decimals + ethToCash);
+            const refund: number = balanceOfUser3.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -929,7 +929,7 @@ describe('[Integration Test] Testing flow of the game', () => {
 
         // withdraw token
         if (balanceOfUser1.gt(0)) {
-            const refund: number = balanceOfUser1.toNumber() / 10 ** (decimals + ethToCash);
+            const refund: number = balanceOfUser1.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user1).withdraw(balanceOfUser1)).to.changeEtherBalances(
                 [cashManager.address, user1.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -938,7 +938,7 @@ describe('[Integration Test] Testing flow of the game', () => {
         }
 
         if (balanceOfUser2.gt(0)) {
-            const refund: number = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
+            const refund: number = balanceOfUser2.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user2).withdraw(balanceOfUser2)).to.changeEtherBalances(
                 [cashManager.address, user2.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]
@@ -946,8 +946,10 @@ describe('[Integration Test] Testing flow of the game', () => {
             expect(await cash.balanceOf(user2.address)).to.equal(0);
         }
 
+
+
         if (balanceOfUser3.gt(0)) {
-            const refund: number = balanceOfUser2.toNumber() / 10 ** (decimals + ethToCash);
+            const refund: number = balanceOfUser3.toNumber() / (ethToCash * 10 ** decimals);
             await expect(cashManager.connect(user3).withdraw(balanceOfUser3)).to.changeEtherBalances(
                 [cashManager.address, user3.address],
                 [parseEther(`-${refund}`), parseEther(`${refund}`)]

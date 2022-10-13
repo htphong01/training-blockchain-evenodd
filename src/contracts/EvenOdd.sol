@@ -12,7 +12,7 @@ import './interfaces/ITicketManager.sol';
 contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     /**
-     * @dev struct for storing player's information in game
+     * @notice struct for storing player's information in game
      */
     struct Player {
         uint256 ticketId;
@@ -22,7 +22,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev struct for storing information of a game
+     * @notice struct for storing information of a game
      */
     struct Match {
         uint256 roll1;
@@ -30,19 +30,19 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         bool isOdd;
     }
     /**
-     * @dev Cash contract interface
+     * @notice Cash contract interface
      *      Used to call function of ERC20
      */
     ICash public cash;
 
     /**
-     * @dev CashManager contract interface
+     * @notice CashManager contract interface
      *      Used to manage cashes (ERC20 token) of users
      */
     ICashManager public cashManager;
 
     /**
-     * @dev TicketManager contract interface
+     * @notice TicketManager contract interface
      *      Used to manage ticket (ERC721) of users
      */
     ITicketManager public ticketManager;
@@ -60,7 +60,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     event WithDrawn(address indexed _to, uint256 indexed _matchId, uint256 _amount);
 
     /**
-     * @dev Modifier to check that the account's address is Zero address
+     * @notice Modifier to check that the account's address is Zero address
      * @param _value Amount to check
      */
     modifier validValue(uint256 _value) {
@@ -69,7 +69,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev Replace for constructor function in order to be upgradeable
+     * @notice Replace for constructor function in order to be upgradeable
      * @param _cashAddress Address of contract Cash
      * @param _cashManagerAddress Address of contract CashManager
      * @param _ticketManagerAddress Address of contract TicketManager
@@ -103,25 +103,25 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev Test for cases that contract directly receive eth without data
+     * @notice Test for cases that contract directly receive eth without data
      */
     receive() external payable validValue(msg.value) {
         emit Received(_msgSender(), msg.value);
     }
 
     /**
-     * @dev Supply token to contract
+     * @notice Supply token to contract
      * Emit {SuppliedToken} events
      */
     function supplyToken() external payable onlyOwner {
-        uint256 _amount = msg.value * 10 ** cashManager.ethToCash() / 10**18;
+        uint256 _amount = msg.value * cashManager.ethToCash() / 10**18;
         cashManager.buy{value: msg.value}();
 
         emit SuppliedToken(_msgSender(), _amount);
     }
 
     /**
-     * @dev Bet in a game
+     * @notice Bet in a game
      * @param _isOdd (true/false) the result that user betted
      * @param _amount The amount of token that user betteds
      * emit {Betted} events
@@ -164,8 +164,8 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev Play a new game, roll 2 dice, get result is odd or even
-     * @notice Only owner can play a new game
+     * @notice Play a new game, roll 2 dice, get result is odd or even
+     * @dev Only owner can play a new game
      * emit {Played} events
      */
     function play() external onlyOwner {
@@ -187,7 +187,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     /**
-     * @dev Withdraw refund for user
+     * @notice Withdraw refund for user
      *      Prevent DoS Block Gas Limit
      * @param _matchId Id of the match that user wants to withdraw
      * emit {WithDrawnRefund} events

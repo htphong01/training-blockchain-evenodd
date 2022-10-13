@@ -11,7 +11,7 @@ import './interfaces/ICashManager.sol';
 
 contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Upgradeable, ICashManager {
     /**
-     * @dev Cash contract interface
+     * @notice Cash contract interface
      *      Using this contract to mint and burn ERC20 token
      */
     ICash public cash;
@@ -23,7 +23,7 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
     event SetETHToCash(uint256 indexed _amount);
 
     /**
-     * @dev Replace for constructor function in order to be upgradeable
+     * @notice Replace for constructor function in order to be upgradeable
      * @param _cashAddress Address of contract Cash
      */
     function initialize(ICash _cashAddress) public initializer {
@@ -36,11 +36,11 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
             'Invalid Cash contract'
         );
         cash = _cashAddress;
-        ethToCash = 2;
+        ethToCash = 100;
     }
 
     /**
-     * @dev Override function `supportsInterface` when using ERC165
+     * @notice Override function `supportsInterface` when using ERC165
      */
     function supportsInterface(bytes4 interfaceId)
         public
@@ -53,23 +53,23 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
     }
 
     /**
-     * @dev Buy cashes (ERC20) to play game. 1 wei = 1 cash
+     * @notice Buy cashes (ERC20) to play game. 1 wei = 1 cash
      * Emit {Bought} events
      */
     function buy() external payable {
-        uint256 _amount = msg.value * (10 ** (cash.decimals() + ethToCash)) / (10 ** 18);
+        uint256 _amount = msg.value * (10 ** cash.decimals()) * ethToCash / (10 ** 18);
         cash.mint(_msgSender(), _amount);
         
         emit Bought(_msgSender(), _amount);
     }
 
     /**
-     * @dev Withdraw amount of cash that user wants
+     * @notice Withdraw amount of cash that user wants
      * @param _amount - Number of cashes that user wants to withdraw
      * emit {Withdrawn} events
      */
     function withdraw(uint256 _amount) external nonReentrant {
-        uint256 refund = _amount * (10 ** 18) / (10 ** (cash.decimals() + ethToCash));
+        uint256 refund = _amount * (10 ** 18) / (ethToCash * 10 ** cash.decimals());
         cash.burn(_msgSender(), _amount);
         AddressUpgradeable.sendValue(payable(_msgSender()), refund);
 
@@ -77,12 +77,12 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
     }
 
     /**
-     * @dev Set ETH to cash
+     * @notice Set ETH to cash
      * @param _amount - Number of cashes that 1 ETH equal to
      * emit {SetETHToCash} events
      */
     function setETHToCash(uint256 _amount) external onlyOwner {
-        require(_amount > 0 && _amount <= 18, 'Invalid amount!');
+        require(_amount > 0 && _amount <= 10**18, 'Invalid amount!');
         ethToCash = _amount;
         emit SetETHToCash(_amount);
     }

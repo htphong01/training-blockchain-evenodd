@@ -6,9 +6,11 @@ import {
     Ticket__factory,
     TicketManager__factory,
     Cash__factory,
+    CashManager__factory,
     Ticket,
     TicketManager,
     Cash,
+    CashManager,
 } from '../typechain-types';
 
 describe('Testing Ticket contract', function () {
@@ -19,31 +21,37 @@ describe('Testing Ticket contract', function () {
     let TicketFactory: Ticket__factory;
     let TicketManagerFactory: TicketManager__factory;
     let CashFactory: Cash__factory;
+    let CashManagerFactory: CashManager__factory;
 
     let ticket: Ticket;
-    let cash: Cash;
     let ticketManager: TicketManager;
+    let cash: Cash;
+    let cashManager: CashManager;
 
     let pricePerTime: BigNumber;
 
     before(async () => {
-        TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory;
         CashFactory = (await ethers.getContractFactory('Cash')) as Cash__factory;
+        CashManagerFactory = (await ethers.getContractFactory('CashManager')) as CashManager__factory;
+        TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory;
         TicketManagerFactory = (await ethers.getContractFactory('TicketManager')) as TicketManager__factory;
     });
 
     beforeEach(async () => {
         [owner, user1, user2] = await ethers.getSigners();
 
-        ticket = (await upgrades.deployProxy(TicketFactory)) as Ticket;
-        await ticket.deployed();
-
         cash = (await upgrades.deployProxy(CashFactory)) as Cash;
         await cash.deployed();
 
-        await expect(upgrades.deployProxy(TicketManagerFactory, [user1.address, cash.address])).to.be.revertedWith(
-            'Invalid Ticket contract'
-        );
+        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
+        await cashManager.deployed();
+
+        ticket = (await upgrades.deployProxy(TicketFactory)) as Ticket;
+        await ticket.deployed();
+
+        await expect(
+            upgrades.deployProxy(TicketManagerFactory, [user1.address, cashManager.address])
+        ).to.be.revertedWith('Invalid Ticket contract');
 
         await expect(upgrades.deployProxy(TicketManagerFactory, [ticket.address, user1.address])).to.be.revertedWith(
             'Invalid Cash contract'
@@ -51,7 +59,7 @@ describe('Testing Ticket contract', function () {
 
         ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [
             ticket.address,
-            cash.address,
+            cashManager.address,
         ])) as TicketManager;
         await ticketManager.deployed();
         await ticket.connect(owner).transferOwnership(ticketManager.address);
@@ -124,9 +132,9 @@ describe('Testing Ticket contract', function () {
         });
 
         it('[Fail]: Substract for zero address', async () => {
-            await expect(
-                ticketManager.connect(owner).subtractTimes(ethers.constants.AddressZero)
-            ).to.be.revertedWith('Invalid address!');
+            await expect(ticketManager.connect(owner).subtractTimes(ethers.constants.AddressZero)).to.be.revertedWith(
+                'Invalid address!'
+            );
         });
 
         it('[Fail]: Can not subtract times when user does not have ticket', async () => {
@@ -327,6 +335,23 @@ describe('Testing Ticket contract', function () {
         it('[OK] Set new price successfully', async () => {
             await expect(ticketManager.setPricePerTime(5)).to.be.emit(ticketManager, 'SetPricePerTime').withArgs(5);
             expect(await ticketManager.pricePerTime()).to.equal(5);
+        });
+    });
+
+    describe('Testing `withdrawToDeployer` function', () => {
+        it('[Fail]: Not deployer withdraw', async () => {
+            await expect(ticketManager.connect(user1).withdrawToDeployer()).to.be.revertedWith('Not allowed!');
+        });
+
+        it('[OK] Withdraw successfully', async () => {
+            await ticketManager.connect(user1).buy(10, {
+                value: pricePerTime.mul(10),
+            })
+
+            await expect(ticketManager.connect(owner).withdrawToDeployer())
+                .to.be.emit(ticketManager, 'WithdrawnToDeployer')
+                .withArgs(owner.address, pricePerTime.mul(10));
+            expect(await ethers.provider.getBalance(ticketManager.address)).to.equal(0);
         });
     });
 });

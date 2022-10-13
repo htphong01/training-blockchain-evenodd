@@ -41,7 +41,8 @@ export type UserTicketStructOutput = [BigNumber, BigNumber] & {
 export interface TicketManagerInterface extends utils.Interface {
   functions: {
     "buy(uint256)": FunctionFragment;
-    "cash()": FunctionFragment;
+    "cashManager()": FunctionFragment;
+    "deployer()": FunctionFragment;
     "extendTicket(uint256)": FunctionFragment;
     "getTicketOf(address)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
@@ -55,12 +56,14 @@ export interface TicketManagerInterface extends utils.Interface {
     "ticket()": FunctionFragment;
     "ticketOf(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "withdrawToDeployer()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "buy"
-      | "cash"
+      | "cashManager"
+      | "deployer"
       | "extendTicket"
       | "getTicketOf"
       | "initialize"
@@ -74,13 +77,18 @@ export interface TicketManagerInterface extends utils.Interface {
       | "ticket"
       | "ticketOf"
       | "transferOwnership"
+      | "withdrawToDeployer"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "buy",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "cash", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "cashManager",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "deployer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "extendTicket",
     values: [PromiseOrValue<BigNumberish>]
@@ -127,9 +135,17 @@ export interface TicketManagerInterface extends utils.Interface {
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawToDeployer",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(functionFragment: "buy", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "cash", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "cashManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "deployer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "extendTicket",
     data: BytesLike
@@ -167,6 +183,10 @@ export interface TicketManagerInterface extends utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawToDeployer",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Bought(address,uint256,uint256)": EventFragment;
@@ -175,7 +195,7 @@ export interface TicketManagerInterface extends utils.Interface {
     "OwnershipTransferred(address,address)": EventFragment;
     "SetPricePerTime(uint256)": EventFragment;
     "SubTractedTimes(address,uint256)": EventFragment;
-    "WithDrawn(address,uint256)": EventFragment;
+    "WithdrawnToDeployer(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Bought"): EventFragment;
@@ -184,7 +204,7 @@ export interface TicketManagerInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SetPricePerTime"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SubTractedTimes"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "WithDrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WithdrawnToDeployer"): EventFragment;
 }
 
 export interface BoughtEventObject {
@@ -250,16 +270,17 @@ export type SubTractedTimesEvent = TypedEvent<
 
 export type SubTractedTimesEventFilter = TypedEventFilter<SubTractedTimesEvent>;
 
-export interface WithDrawnEventObject {
+export interface WithdrawnToDeployerEventObject {
   _account: string;
   _amount: BigNumber;
 }
-export type WithDrawnEvent = TypedEvent<
+export type WithdrawnToDeployerEvent = TypedEvent<
   [string, BigNumber],
-  WithDrawnEventObject
+  WithdrawnToDeployerEventObject
 >;
 
-export type WithDrawnEventFilter = TypedEventFilter<WithDrawnEvent>;
+export type WithdrawnToDeployerEventFilter =
+  TypedEventFilter<WithdrawnToDeployerEvent>;
 
 export interface TicketManager extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -293,7 +314,9 @@ export interface TicketManager extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    cash(overrides?: CallOverrides): Promise<[string]>;
+    cashManager(overrides?: CallOverrides): Promise<[string]>;
+
+    deployer(overrides?: CallOverrides): Promise<[string]>;
 
     extendTicket(
       _times: PromiseOrValue<BigNumberish>,
@@ -307,7 +330,7 @@ export interface TicketManager extends BaseContract {
 
     initialize(
       _ticketAddress: PromiseOrValue<string>,
-      _cashAddress: PromiseOrValue<string>,
+      _cashManagerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -349,6 +372,10 @@ export interface TicketManager extends BaseContract {
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    withdrawToDeployer(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   buy(
@@ -356,7 +383,9 @@ export interface TicketManager extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  cash(overrides?: CallOverrides): Promise<string>;
+  cashManager(overrides?: CallOverrides): Promise<string>;
+
+  deployer(overrides?: CallOverrides): Promise<string>;
 
   extendTicket(
     _times: PromiseOrValue<BigNumberish>,
@@ -370,7 +399,7 @@ export interface TicketManager extends BaseContract {
 
   initialize(
     _ticketAddress: PromiseOrValue<string>,
-    _cashAddress: PromiseOrValue<string>,
+    _cashManagerAddress: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -413,13 +442,19 @@ export interface TicketManager extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  withdrawToDeployer(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     buy(
       _times: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    cash(overrides?: CallOverrides): Promise<string>;
+    cashManager(overrides?: CallOverrides): Promise<string>;
+
+    deployer(overrides?: CallOverrides): Promise<string>;
 
     extendTicket(
       _times: PromiseOrValue<BigNumberish>,
@@ -433,7 +468,7 @@ export interface TicketManager extends BaseContract {
 
     initialize(
       _ticketAddress: PromiseOrValue<string>,
-      _cashAddress: PromiseOrValue<string>,
+      _cashManagerAddress: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -473,6 +508,8 @@ export interface TicketManager extends BaseContract {
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawToDeployer(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -524,14 +561,14 @@ export interface TicketManager extends BaseContract {
       _remainTimes?: null
     ): SubTractedTimesEventFilter;
 
-    "WithDrawn(address,uint256)"(
+    "WithdrawnToDeployer(address,uint256)"(
       _account?: PromiseOrValue<string> | null,
       _amount?: PromiseOrValue<BigNumberish> | null
-    ): WithDrawnEventFilter;
-    WithDrawn(
+    ): WithdrawnToDeployerEventFilter;
+    WithdrawnToDeployer(
       _account?: PromiseOrValue<string> | null,
       _amount?: PromiseOrValue<BigNumberish> | null
-    ): WithDrawnEventFilter;
+    ): WithdrawnToDeployerEventFilter;
   };
 
   estimateGas: {
@@ -540,7 +577,9 @@ export interface TicketManager extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    cash(overrides?: CallOverrides): Promise<BigNumber>;
+    cashManager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    deployer(overrides?: CallOverrides): Promise<BigNumber>;
 
     extendTicket(
       _times: PromiseOrValue<BigNumberish>,
@@ -554,7 +593,7 @@ export interface TicketManager extends BaseContract {
 
     initialize(
       _ticketAddress: PromiseOrValue<string>,
-      _cashAddress: PromiseOrValue<string>,
+      _cashManagerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -594,6 +633,10 @@ export interface TicketManager extends BaseContract {
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    withdrawToDeployer(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -602,7 +645,9 @@ export interface TicketManager extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    cash(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    cashManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    deployer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     extendTicket(
       _times: PromiseOrValue<BigNumberish>,
@@ -616,7 +661,7 @@ export interface TicketManager extends BaseContract {
 
     initialize(
       _ticketAddress: PromiseOrValue<string>,
-      _cashAddress: PromiseOrValue<string>,
+      _cashManagerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -654,6 +699,10 @@ export interface TicketManager extends BaseContract {
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawToDeployer(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

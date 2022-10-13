@@ -11,7 +11,7 @@ contract Ticket is OwnableUpgradeable, ERC721Upgradeable, ITicket {
     event Minted(address _account, uint256 _tokenId);
 
     /**
-     * @dev Replace for constructor function in order to be upgradeable
+     * @notice Replace for constructor function in order to be upgradeable
      */
     function initialize() public initializer {
         __ERC721_init('Ticket', 'Ticket');
@@ -20,14 +20,14 @@ contract Ticket is OwnableUpgradeable, ERC721Upgradeable, ITicket {
     }
 
     /**
-     * @dev Override function `supportsInterface` when using ERC165
+     * @notice Override function `supportsInterface` when using ERC165
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165Upgradeable, ERC721Upgradeable) returns (bool) {
         return interfaceId == type(ITicket).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**
-     * @dev Used to mint ticket(ERC721) for users
+     * @notice Used to mint ticket(ERC721) for users
      * @param _to Address of user to mint
      * @param _tokenId Ticket's id of user
      */ 

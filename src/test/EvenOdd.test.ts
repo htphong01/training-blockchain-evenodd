@@ -53,15 +53,15 @@ describe('Test EvenOdd Contract', () => {
         cash = (await upgrades.deployProxy(CashFactory)) as Cash;
         await cash.deployed();
 
+        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
+        await cashManager.deployed();
+        
         ticket = (await upgrades.deployProxy(TicketFactory)) as Ticket;
         await ticket.deployed();
 
-        cashManager = (await upgrades.deployProxy(CashManagerFactory, [cash.address])) as CashManager;
-        await cashManager.deployed();
-
         ticketManager = (await upgrades.deployProxy(TicketManagerFactory, [
             ticket.address,
-            cash.address,
+            cashManager.address,
         ])) as TicketManager;
         await ticketManager.deployed();
 
@@ -96,7 +96,7 @@ describe('Test EvenOdd Contract', () => {
             })
         )
             .to.emit(evenOdd, 'SuppliedToken')
-            .withArgs(owner.address, 2 * 10 ** ethToCash);
+            .withArgs(owner.address, 2 * ethToCash);
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);
@@ -205,7 +205,7 @@ describe('Test EvenOdd Contract', () => {
                     value: parseEther('2.1'),
                 });
 
-                await expect(evenOdd.connect(user1).bet(true, parseUnits(`${2.1 * 10 ** ethToCash}`, decimals))).to.be.revertedWith(
+                await expect(evenOdd.connect(user1).bet(true, parseUnits(`${2.1 * ethToCash}`, decimals))).to.be.revertedWith(
                     'Not enough to reward!'
                 );
             });
