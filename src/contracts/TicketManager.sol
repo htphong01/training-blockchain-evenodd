@@ -82,7 +82,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
         ticket = _ticketAddress;
         cashManager = _cashManagerAddress;
-        pricePerTime = 10**18 / (cashManager.ethToCash() * 10);
+        pricePerTime = 10**18 / (cashManager.ethToCash() * 10); // 1 time costs 0.1 cash
         deployer = _msgSender();
     }
 
