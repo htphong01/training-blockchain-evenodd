@@ -114,7 +114,7 @@ contract EvenOdd is OwnableUpgradeable, ReentrancyGuardUpgradeable {
      * Emit {SuppliedToken} events
      */
     function supplyToken() external payable onlyOwner {
-        uint256 _amount = msg.value * cashManager.ethToCash() / 10**18;
+        uint256 _amount = msg.value * cashManager.ethToCash() * (10 ** cash.decimals()) / 10**18;
         cashManager.buy{value: msg.value}();
 
         emit SuppliedToken(_msgSender(), _amount);

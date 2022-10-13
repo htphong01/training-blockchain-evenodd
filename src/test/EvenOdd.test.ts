@@ -96,7 +96,7 @@ describe('Test EvenOdd Contract', () => {
             })
         )
             .to.emit(evenOdd, 'SuppliedToken')
-            .withArgs(owner.address, 2 * ethToCash);
+            .withArgs(owner.address, 2 * ethToCash * 10 ** decimals);
 
         await cash.connect(user1).approve(evenOdd.address, ethers.constants.MaxUint256);
         await cash.connect(user2).approve(evenOdd.address, ethers.constants.MaxUint256);

@@ -101,6 +101,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
     /**
      * @notice Buy a ticket to play game. 0.1 eth -> 1 ticket
+     * @param _times The number of times that user wants to buy
      * Emit {Bought} events
      */
     function buy(uint256 _times) external payable validTimesAndCosts(_times) {
@@ -129,7 +130,7 @@ contract TicketManager is OwnableUpgradeable, ERC165Upgradeable, ITicketManager 
 
     /**
      * @notice Extend ticket when it was expired
-     * @param _times The time that user want to extend
+     * @param _times The time that user wants to extend
      * Emit {ExtendedTicket} events
      */
     function extendTicket(uint256 _times) external payable validTimesAndCosts(_times) validTicket(_msgSender()) {

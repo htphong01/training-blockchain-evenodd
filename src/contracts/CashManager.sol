@@ -16,6 +16,9 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
      */
     ICash public cash;
 
+    /**
+     * @notice define how many cashes will be bought with 1 ETH 
+     */
     uint256 public ethToCash;
 
     event Bought(address indexed _account, uint256 _amount);
