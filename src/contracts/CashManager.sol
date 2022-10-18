@@ -56,7 +56,7 @@ contract CashManager is OwnableUpgradeable, ReentrancyGuardUpgradeable, ERC165Up
     }
 
     /**
-     * @notice Buy cashes (ERC20) to play game. 1 wei = 1 cash
+     * @notice Buy cashes (ERC20) to play game.
      * Emit {Bought} events
      */
     function buy() external payable {
